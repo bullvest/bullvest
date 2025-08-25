@@ -1,0 +1,60 @@
+name: Flutter Android Build
+
+on:
+  push:
+    branches:
+      - main  # This will trigger the build when a commit is pushed to this branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Run the job on Ubuntu
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4  # Checkout the repository code
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2  # Set up Flutter environment
+        with:
+          flutter-version: '3.35.1'  # Replace with the required Flutter version
+
+      - name: Flutter pub get
+        run: flutter pub get  # Install dependencies
+
+      - name: Decode keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks  # Decode keystore and store it in the right path
+
+      - name: Set permissions on gradlew
+        run: chmod +x android/gradlew  # Make gradlew executable
+
+      - name: Build APK and AAB
+        working-directory: android  # Set the working directory to android
+        run: |
+          ./gradlew clean assembleRelease bundleRelease  # Build APK and AAB
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}  # Pass secrets for keystore
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload APK and AAB
+        uses: actions/upload-artifact@v4  # Upload APK and AAB as artifacts
+        with:
+          name: flutter-android-artifacts
+          path: |
+            android/app/build/outputs/flutter-apk/app-release.apk
+            android/app/build/outputs/bundle/release/app-release.aab
+
+      - name: 📤 Upload APK and AAB via uppy.sh
+        run: |
+          for file in \
+            android/app/build/outputs/flutter-apk/app-release.apk \
+            android/app/build/outputs/bundle/release/app-release.aab; do
+            if [ -f "$file" ]; then
+              echo "📤 Uploading $file ..."
+              url=$(curl --upload-file "$file" "https://uppy.sh/$(basename "$file")")
+              echo "  Uploaded: $url"
+            else
+              echo "  Not found: $file"
+            fi
+          done
+
