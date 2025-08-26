@@ -13,12 +13,12 @@ android {
         minSdk = 24
         targetSdk = 35
         versionCode = 17
-        versionName = "1.0.0"
+        versionName = "1.0.1"
     }
 
     signingConfigs {
         create("release") {
-            storeFile = file("android/app/bullvest.jks")
+            storeFile = file("bullvest.jks")
             storePassword = "bullvest101@"
             keyAlias = "bullvest"
             keyPassword = "bullvest101@"
