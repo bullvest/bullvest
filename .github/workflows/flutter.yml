@@ -38,8 +38,8 @@ jobs:
 
       - name: Debug: List Build Directory
         run: |
-          echo "Listing files in adroid/app/build/outputs/
-          ls -R android/app/build/outputs/"
+          echo "Listing files in adroid/app/build/outputs/"
+          ls -R android/app/build/outputs/
  
       - name: 📤 Upload APK and AAB via uppy.sh
         run: |
