@@ -3,7 +3,7 @@ name: Flutter
 on:
   push:
     branches:
-      - main # Trigger when a commit is pushed to the android-build branch
+      - main # Trigger when  commit is pushed to the android-build branch
 
 jobs:
   build:
