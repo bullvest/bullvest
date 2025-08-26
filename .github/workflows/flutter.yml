@@ -37,7 +37,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           
       - name: Debug: List Build Directory
-        run:
+        run: |
           echo "Listing files in android/app/build/outputs/"
           ls -R android/app/build/outputs/
 
@@ -55,4 +55,3 @@ jobs:
               echo "  Not found: $file"
             fi
           done
-
