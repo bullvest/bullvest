@@ -22,7 +22,7 @@ jobs:
         run: flutter pub get  # Install dependencies
 
       - name: Decode keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks  # Decode keystore and store it in the right path
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/bullvest.jks  # Decode keystore and store it in the right path
 
       - name: Set permissions on gradlew
         run: chmod +x android/gradlew  # Make gradlew executable
@@ -36,13 +36,6 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
-      - name: Upload APK and AAB
-        uses: actions/upload-artifact@v4  # Upload APK and AAB as artifacts
-        with:
-          name: flutter-android-artifacts
-          path: |
-            android/app/build/outputs/flutter-apk/app-release.apk
-            android/app/build/outputs/bundle/release/app-release.aab
 
       - name: 📤 Upload APK and AAB via uppy.sh
         run: |
