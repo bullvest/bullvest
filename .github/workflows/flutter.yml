@@ -28,9 +28,9 @@ jobs:
         run: chmod +x android/gradlew  # Make gradlew executable
 
       - name: Build APK and AAB
-        working-directory: android  # Set working directory to android folder
         run: |
-          ./gradlew clean assembleRelease bundleRelease  # Build the APK and AAB
+          flutter build apk --release
+          flutter build appbundle --release
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}  # Pass keystore password
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}  # Pass the key alias
