@@ -1,34 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:bullvest/splash_screen.dart';
-import 'package:bullvest/login_screen.dart';
-import 'package:bullvest/firebase_options.dart';
 
-void main() async {
-  // Ensure Firebase is initialized before running the app
-  //WidgetsFlutterBinding.ensureInitialized();
-  //await Firebase.initializeApp(); // Firebase initialization
-
-  runApp(BullvestApp());
+void main() {
+  runApp(MyApp());
 }
 
-class BullvestApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Bullvest',
+      title: 'My Flutter App',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Colors.black,
-        colorScheme: ColorScheme.dark(
-          primary: Colors.tealAccent,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Home Page'),
+      ),
+      body: Center(
+        child: Text(
+          'Hello, World!',
+          style: TextStyle(fontSize: 24),
         ),
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => SplashScreen(),
-        '/login': (context) => LoginScreen(), // Login screen route
-      },
     );
   }
 }
