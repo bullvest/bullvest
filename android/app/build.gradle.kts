@@ -42,7 +42,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
 
-        coreLibraryDesugaringEnabled true
+        // Correct Kotlin DSL syntax:
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -53,7 +54,8 @@ android {
 dependencies {
     // Your other dependencies here...
 
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
+    // Correct Kotlin DSL syntax:
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }
 
 flutter {
