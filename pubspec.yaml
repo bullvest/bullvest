@@ -13,7 +13,15 @@ dependencies:
   firebase_auth:
   google_sign_in: ^5.0.7
   firebase_core:
-  cloud_firestore: 
+  cloud_firestore:
+  image_picker:
+  get:
+  firebase_storage:
+  shared_preferences:
+  uuid:
+  firebase_messaging:
+  flutter_local_notifications:
+  permission_handler: 
 
 dev_dependencies:
   flutter_test:
