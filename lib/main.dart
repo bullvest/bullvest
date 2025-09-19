@@ -7,7 +7,9 @@ import 'package:bullvest/firebase_options.dart';
 void main() async {
   // Ensure Firebase is initialized before running the app
   WidgetsFlutterBinding.ensureInitialized();
-   Firebase.initializeApp(); // Firebase initialization
+  await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
+);
 
   runApp(BullvestApp());
 }

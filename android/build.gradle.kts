@@ -1,4 +1,10 @@
-allprojects {
+// android/build.gradle.kts (Project-level)
+
+buildscript {
+    dependencies {
+        classpath("com.google.gms:google-services:4.4.1") // ✅ Required for Firebase
+    }
+
     repositories {
         google()
         mavenCentral()
