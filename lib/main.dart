@@ -24,11 +24,7 @@ class BullvestApp extends StatelessWidget {
           primary: Colors.tealAccent,
         ),
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => SplashScreen(),
-        '/login': (context) => LoginScreen(), // Login screen route
-      },
+       home: LoginScreen(),
     );
   }
 }
