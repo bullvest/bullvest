@@ -7,7 +7,7 @@ import 'package:bullvest/firebase_options.dart';
 void main() async {
   // Ensure Firebase is initialized before running the app
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Firebase initialization
+   Firebase.initializeApp(); // Firebase initialization
 
   runApp(BullvestApp());
 }
@@ -24,7 +24,11 @@ class BullvestApp extends StatelessWidget {
           primary: Colors.tealAccent,
         ),
       ),
-       home: LoginScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => SplashScreen(),
+        '/login': (context) => LoginScreen(), // Login screen route
+      },
     );
   }
 }
