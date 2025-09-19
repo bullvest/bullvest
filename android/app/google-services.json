@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1054812298550",
+    "project_id": "bullvest-55260",
+    "storage_bucket": "bullvest-55260.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1054812298550:android:6d8a355d68ee58df956797",
+        "android_client_info": {
+          "package_name": "com.bullvest.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzpmu3SHKZRqxX4pjzuQSrZMfEQ-75rfc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
