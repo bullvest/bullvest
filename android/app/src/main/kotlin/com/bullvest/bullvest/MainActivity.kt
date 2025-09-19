@@ -1,4 +1,4 @@
-package com.bullvest.bullvest
+package com.bullvest.com
 
 import io.flutter.embedding.android.FlutterActivity
 

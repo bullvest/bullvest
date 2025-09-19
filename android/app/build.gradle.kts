@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.bullvest.bullvest"
+    namespace = "com.bullvest.com"
     compileSdk = 35
 
     defaultConfig {
