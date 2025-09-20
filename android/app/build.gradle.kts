@@ -55,7 +55,7 @@ dependencies {
     // Your other dependencies here...
 
     // Correct Kotlin DSL syntax:
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
 
 flutter {
