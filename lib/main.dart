@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:get/get.dart'; // <-- Add this import
 import 'package:bullvest/splash_screen.dart';
-import 'package:bullvest/login_screen.dart';
 import 'package:bullvest/firebase_options.dart';
 
 void main() async {
-  // Ensure Firebase is initialized before running the app
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-  options: DefaultFirebaseOptions.currentPlatform,
-);
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(BullvestApp());
 }
@@ -17,16 +16,17 @@ void main() async {
 class BullvestApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
+      // <-- Use GetMaterialApp here
       title: 'Bullvest',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Colors.black, 
+        scaffoldBackgroundColor: Colors.black,
         colorScheme: ColorScheme.dark(
           primary: Colors.tealAccent,
         ),
       ),
-      home: SplashScreen(), 
+      home: SplashScreen(),
     );
   }
 }
