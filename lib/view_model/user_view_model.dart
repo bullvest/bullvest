@@ -235,7 +235,6 @@ class UserViewModel {
     AppConstants.currentUser.type = snapshot['type'] ?? "";
     AppConstants.currentUser.country = snapshot['country'] ?? "";
     AppConstants.currentUser.state = snapshot['state'] ?? "";
-    AppConstants.currentUser.earnings = (snapshot['earnings'] ?? 0).toDouble();
     AppConstants.currentUser.isHost = snapshot['isHost'] ?? false;
     AppConstants.currentUser.status = (snapshot['status'] ?? 1).toDouble();
   }

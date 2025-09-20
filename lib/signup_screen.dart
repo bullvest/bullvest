@@ -919,7 +919,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 colors: [
                   Colors.white,
                   Colors.white,
-                  Colors.black12,
+                  Colors.white,
                 ],
               ),
             ),

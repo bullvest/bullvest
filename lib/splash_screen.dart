@@ -36,25 +36,26 @@ class _SplashScreenState extends State<SplashScreen> {
       if (user != null) {
         AppConstants.currentUser.id = user.uid;
 
-        // Deep link handling
-        /*  final Uri initialUri = Uri.base;
-        final isDeepLinkToReel = initialUri.path == '/reel' &&
-            initialUri.queryParameters['param'] != null;
-        final reelId = initialUri.queryParameters['param'];
-        
+        // ✅ Get user document from Firestore
+        final snapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
 
-        // Immediately navigate
-        if (isDeepLinkToReel) {
-          Get.offAll(() => VideoReelsPage(reelId: reelId!));
-        } else {
-          Get.offAll(() => const VideoReelsPage());
+        if (!snapshot.exists) {
+          throw Exception("User data not found in Firestore.");
         }
-        */
 
-        // Load remaining data asynchronously in background
+        // ✅ Extract user role
+        final String userRole = snapshot['type'] ?? 'investor';
+
+        // ✅ Navigate with role
+        Get.offAll(() => HomeScreen(userRole: userRole));
+
+        // ✅ Load additional data in background
         _loadUserData(user.uid);
       } else {
-        // No user -> go to login
+        // Not logged in
         Get.offAll(() => const LoginScreen());
       }
     } catch (e, stack) {
@@ -186,13 +187,20 @@ class _SplashScreenState extends State<SplashScreen> {
                     child: child,
                   );
                 },
-                child: Text("BULLVEST"), // Splash logo image
+                child: Text(
+                  "BULLVEST",
+                  style: TextStyle(
+                    fontWeight: FontWeight.normal,
+                    fontSize: 24,
+                    color: Colors.black,
+                  ),
+                ), // Splash logo image
               ),
-              SizedBox(height: 50),
+              SizedBox(height: 5),
               const Padding(
                 padding: EdgeInsets.only(top: 2.0),
                 child: Text(
-                  "version 1.0.0", // Text on splash screen
+                  "...the investor-founder marketplace", // Text on splash screen
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.normal,

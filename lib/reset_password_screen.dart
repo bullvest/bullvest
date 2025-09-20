@@ -60,7 +60,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               colors: [
                 Colors.white,
                 Colors.white,
-                Colors.black12,
+                Colors.white,
               ],
             ),
           ),
