@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black,
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -53,10 +53,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Image.asset("images/afrikk_prev_ui.png", height: 160),
 
                   Text(
-                    'Investor-Founder Marketplace',
+                    'Bullvest',
                     style: TextStyle(
-                      color: Colors.grey[700],
-                      fontSize: 15,
+                      color: Colors.tealAccent,
+                      fontSize: 25,
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -68,14 +68,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         // Email
                         TextFormField(
+                          style: TextStyle(color: Colors.tealAccent),
                           decoration: InputDecoration(
                             labelText: 'Email',
-                            labelStyle: TextStyle(color: Colors.black),
+                            labelStyle: TextStyle(color: Colors.tealAccent),
                             prefixIcon: Icon(Icons.email),
+                            prefixIconColor: Colors.tealAccent,
                             filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                            fillColor: Colors.black,
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                              borderSide: BorderSide(color: Colors.tealAccent),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                              borderSide: BorderSide(color: Colors.tealAccent),
                             ),
                           ),
                           controller: _emailTextController,
@@ -86,11 +93,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         // Password
                         TextFormField(
+                          style: TextStyle(color: Colors.tealAccent),
                           obscureText: !showPassword,
                           decoration: InputDecoration(
                             labelText: 'Password',
-                            labelStyle: TextStyle(color: Colors.black),
+                            labelStyle: TextStyle(color: Colors.tealAccent),
                             prefixIcon: Icon(Icons.lock),
+                            prefixIconColor: Colors.tealAccent,
                             suffixIcon: IconButton(
                               icon: Icon(
                                 showPassword
@@ -100,9 +109,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               onPressed: toggleShowPassword,
                             ),
                             filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                            fillColor: Colors.black,
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                              borderSide: BorderSide(color: Colors.tealAccent),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                              borderSide: BorderSide(color: Colors.tealAccent),
                             ),
                           ),
                           controller: _passwordTextController,
@@ -128,16 +142,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                       }
                                     },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
+                                backgroundColor: Colors.tealAccent,
                               ),
                               child: userViewModel.isSubmitting.value
                                   ? const CircularProgressIndicator(
-                                      color: Colors.white,
+                                      color: Colors.black,
                                     )
                                   : const Text(
                                       "Login",
                                       style: TextStyle(
-                                          color: Colors.white, fontSize: 18),
+                                          color: Colors.black, fontSize: 18),
                                     ),
                             ),
                           );
@@ -152,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text(
                             "Forgot your password?",
                             style: TextStyle(
-                                fontSize: 14, color: Colors.grey[700]),
+                                fontSize: 14, color: Colors.tealAccent),
                           ),
                         ),
 
@@ -161,14 +175,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         // Divider
                         Row(
                           children: [
-                            Expanded(
-                                child: Divider(color: Colors.grey.shade400)),
+                            Expanded(child: Divider(color: Colors.tealAccent)),
                             const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 8.0),
                               child: Text("OR"),
                             ),
-                            Expanded(
-                                child: Divider(color: Colors.grey.shade400)),
+                            Expanded(child: Divider(color: Colors.tealAccent)),
                           ],
                         ),
 
@@ -180,14 +192,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             Text("New here?",
                                 style: TextStyle(
-                                    fontSize: 13, color: Colors.grey[600])),
+                                    fontSize: 13, color: Colors.white)),
                             TextButton(
                               onPressed: () => Get.to(SignupScreen()),
                               child: Text("Sign up now",
                                   style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.black)),
+                                      color: Colors.tealAccent)),
                             ),
                           ],
                         ),

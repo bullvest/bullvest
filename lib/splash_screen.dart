@@ -136,13 +136,13 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.black,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.white,
-                Colors.white,
+                Colors.black,
+                Colors.black,
               ],
               begin: FractionalOffset(0, 0),
               end: FractionalOffset(1, 0),
@@ -158,9 +158,9 @@ class _SplashScreenState extends State<SplashScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             colors: [
-              Colors.white,
-              Colors.white,
-              Colors.white,
+              Colors.black,
+              Colors.black,
+              Colors.black,
             ],
           ),
           image: DecorationImage(
@@ -190,9 +190,9 @@ class _SplashScreenState extends State<SplashScreen> {
                 child: Text(
                   "BULLVEST",
                   style: TextStyle(
-                    fontWeight: FontWeight.normal,
-                    fontSize: 24,
-                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 30,
+                    color: Colors.tealAccent,
                   ),
                 ), // Splash logo image
               ),
@@ -200,12 +200,12 @@ class _SplashScreenState extends State<SplashScreen> {
               const Padding(
                 padding: EdgeInsets.only(top: 2.0),
                 child: Text(
-                  "...the investor-founder marketplace", // Text on splash screen
+                  "the investor-founder marketplace", // Text on splash screen
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontWeight: FontWeight.normal,
-                    fontSize: 10,
-                    color: Colors.black,
+                    fontSize: 18,
+                    color: Colors.tealAccent,
                   ),
                 ),
               ),

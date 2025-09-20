@@ -840,9 +840,12 @@ class _SignupScreenState extends State<SignupScreen> {
                   RadioListTile<UserRole>(
                     title: Row(
                       children: [
-                        Icon(Icons.trending_up, color: Colors.tealAccent),
+                        Icon(Icons.trending_up, color: Colors.white),
                         SizedBox(width: 8),
-                        Text('Investor'),
+                        Text(
+                          'Investor',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ],
                     ),
                     value: UserRole.investor,
@@ -855,9 +858,12 @@ class _SignupScreenState extends State<SignupScreen> {
                   RadioListTile<UserRole>(
                     title: Row(
                       children: [
-                        Icon(Icons.business_center, color: Colors.tealAccent),
+                        Icon(Icons.business_center, color: Colors.white),
                         SizedBox(width: 8),
-                        Text('Founder'),
+                        Text(
+                          'Founder',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ],
                     ),
                     value: UserRole.founder,
@@ -896,13 +902,13 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.black,
           flexibleSpace: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.white,
-                  Colors.white,
+                  Colors.black,
+                  Colors.black,
                 ],
                 begin: FractionalOffset(0, 0),
                 end: FractionalOffset(1, 0),
@@ -917,9 +923,9 @@ class _SignupScreenState extends State<SignupScreen> {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 colors: [
-                  Colors.white,
-                  Colors.white,
-                  Colors.white,
+                  Colors.black,
+                  Colors.black,
+                  Colors.black,
                 ],
               ),
             ),
@@ -930,7 +936,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   "Get Started!",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Colors.tealAccent,
                     fontSize: 25.0,
                   ),
                   textAlign: TextAlign.left,
@@ -942,7 +948,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   "Create an account to continue.",
                   style: TextStyle(
                     fontWeight: FontWeight.normal,
-                    color: Colors.black,
+                    color: Colors.white,
                     fontSize: 16.0,
                   ),
                   textAlign: TextAlign.left,
@@ -956,23 +962,27 @@ class _SignupScreenState extends State<SignupScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 0.0),
                           child: TextFormField(
+                            style: TextStyle(color: Colors.tealAccent),
                             enabled:
                                 !_isSubmitting, // Disable field during submit
                             decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8.0),
-                                borderSide: BorderSide(color: Colors.black),
+                                borderSide:
+                                    BorderSide(color: Colors.tealAccent),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20.0),
-                                borderSide: BorderSide(color: Colors.black),
+                                borderSide:
+                                    BorderSide(color: Colors.tealAccent),
                               ),
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: Colors.black,
                               labelText: 'Email',
-                              labelStyle:
-                                  TextStyle(color: Colors.black, fontSize: 15),
+                              labelStyle: TextStyle(
+                                  color: Colors.tealAccent, fontSize: 15),
                               prefixIcon: Icon(Icons.email),
+                              prefixIconColor: Colors.tealAccent,
                             ),
                             //  style: const TextStyle(
                             // fontSize: 24,
@@ -989,22 +999,26 @@ class _SignupScreenState extends State<SignupScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 26.0),
                           child: TextFormField(
+                            style: TextStyle(color: Colors.tealAccent),
                             enabled: !_isSubmitting,
                             decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8.0),
-                                borderSide: BorderSide(color: Colors.black),
+                                borderSide:
+                                    BorderSide(color: Colors.tealAccent),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20.0),
-                                borderSide: BorderSide(color: Colors.black),
+                                borderSide:
+                                    BorderSide(color: Colors.tealAccent),
                               ),
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: Colors.black,
                               labelText: 'Password',
                               labelStyle:
                                   TextStyle(color: Colors.black, fontSize: 15),
                               prefixIcon: Icon(Icons.lock),
+                              prefixIconColor: Colors.tealAccent,
                               suffixIcon: IconButton(
                                 icon: const Icon(Icons.visibility_off),
                                 selectedIcon: const Icon(Icons.visibility),
@@ -1012,6 +1026,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                 // _textFocusNode.requestFocus();
                                 // handlePressed(controller);
                               ),
+                              suffixIconColor: Colors.tealAccent,
                             ),
                             obscureText: !showPassword,
                             controller: _passwordTextController,
@@ -1033,7 +1048,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           "password must be at least 6 or more characters",
                           style: TextStyle(
                             fontWeight: FontWeight.normal,
-                            color: Colors.black,
+                            color: Colors.tealAccent,
                             fontSize: 12.0,
                           ),
                           textAlign: TextAlign.left,
@@ -1041,22 +1056,26 @@ class _SignupScreenState extends State<SignupScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 26.0),
                           child: TextFormField(
+                            style: TextStyle(color: Colors.tealAccent),
                             enabled: !_isSubmitting,
                             decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8.0),
-                                borderSide: BorderSide(color: Colors.black),
+                                borderSide:
+                                    BorderSide(color: Colors.tealAccent),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20.0),
-                                borderSide: BorderSide(color: Colors.black),
+                                borderSide:
+                                    BorderSide(color: Colors.tealAccent),
                               ),
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: Colors.black,
                               labelText: 'First Name',
-                              labelStyle:
-                                  TextStyle(color: Colors.black, fontSize: 15),
+                              labelStyle: TextStyle(
+                                  color: Colors.tealAccent, fontSize: 15),
                               prefixIcon: Icon(Icons.person),
+                              prefixIconColor: Colors.tealAccent,
                             ),
                             //  style: const TextStyle(
                             // fontSize: 24,
@@ -1074,22 +1093,26 @@ class _SignupScreenState extends State<SignupScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 26.0),
                           child: TextFormField(
+                            style: TextStyle(color: Colors.tealAccent),
                             enabled: !_isSubmitting,
                             decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8.0),
-                                borderSide: BorderSide(color: Colors.black),
+                                borderSide:
+                                    BorderSide(color: Colors.tealAccent),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20.0),
-                                borderSide: BorderSide(color: Colors.black),
+                                borderSide:
+                                    BorderSide(color: Colors.tealAccent),
                               ),
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: Colors.black,
                               labelText: 'Last Name',
                               labelStyle:
                                   TextStyle(color: Colors.black, fontSize: 15),
                               prefixIcon: Icon(Icons.person),
+                              prefixIconColor: Colors.tealAccent,
                             ),
                             //  style: const TextStyle(
                             // fontSize: 24,
@@ -1109,22 +1132,26 @@ class _SignupScreenState extends State<SignupScreen> {
                         Padding(
                           padding: const EdgeInsets.only(top: 26.0),
                           child: TextFormField(
+                            style: TextStyle(color: Colors.tealAccent),
                             enabled: !_isSubmitting,
                             decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8.0),
-                                borderSide: BorderSide(color: Colors.black),
+                                borderSide:
+                                    BorderSide(color: Colors.tealAccent),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20.0),
-                                borderSide: BorderSide(color: Colors.black),
+                                borderSide:
+                                    BorderSide(color: Colors.tealAccent),
                               ),
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: Colors.black,
                               labelText: 'Mobile Number',
-                              labelStyle:
-                                  TextStyle(color: Colors.black, fontSize: 15),
+                              labelStyle: TextStyle(
+                                  color: Colors.tealAccent, fontSize: 15),
                               prefixIcon: Icon(Icons.call),
+                              prefixIconColor: Colors.tealAccent,
                             ),
                             controller: _mobileNumberTextController,
                             validator: (text) {
@@ -1151,20 +1178,26 @@ class _SignupScreenState extends State<SignupScreen> {
                             onTap: showCountryDialog,
                             child: AbsorbPointer(
                               child: TextFormField(
+                                style: TextStyle(color: Colors.tealAccent),
                                 enabled: !_isSubmitting,
                                 decoration: InputDecoration(
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8.0),
-                                    borderSide: BorderSide(color: Colors.black),
+                                    borderSide:
+                                        BorderSide(color: Colors.tealAccent),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(20.0),
-                                    borderSide: BorderSide(color: Colors.black),
+                                    borderSide:
+                                        BorderSide(color: Colors.tealAccent),
                                   ),
                                   filled: true,
-                                  fillColor: Colors.white,
+                                  fillColor: Colors.black,
                                   labelText: 'Country',
+                                  labelStyle: TextStyle(
+                                      color: Colors.tealAccent, fontSize: 15),
                                   prefixIcon: Icon(Icons.location_on),
+                                  prefixIconColor: Colors.tealAccent,
                                 ),
                                 controller: TextEditingController(
                                     text: selectedCountry),
@@ -1178,20 +1211,26 @@ class _SignupScreenState extends State<SignupScreen> {
                             onTap: showStateDialog,
                             child: AbsorbPointer(
                               child: TextFormField(
+                                style: TextStyle(color: Colors.tealAccent),
                                 enabled: !_isSubmitting,
                                 decoration: InputDecoration(
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8.0),
-                                    borderSide: BorderSide(color: Colors.black),
+                                    borderSide:
+                                        BorderSide(color: Colors.tealAccent),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(20.0),
-                                    borderSide: BorderSide(color: Colors.black),
+                                    borderSide:
+                                        BorderSide(color: Colors.tealAccent),
                                   ),
                                   filled: true,
-                                  fillColor: Colors.white,
+                                  fillColor: Colors.black,
                                   labelText: 'State',
+                                  labelStyle: TextStyle(
+                                      color: Colors.tealAccent, fontSize: 15),
                                   prefixIcon: Icon(Icons.place),
+                                  prefixIconColor: Colors.tealAccent,
                                 ),
                                 controller:
                                     TextEditingController(text: selectedState),
@@ -1216,28 +1255,34 @@ class _SignupScreenState extends State<SignupScreen> {
                             },
                             child: AbsorbPointer(
                               child: TextFormField(
+                                style: TextStyle(color: Colors.tealAccent),
                                 enabled: !_isSubmitting,
                                 controller: _roleTextController,
                                 decoration: InputDecoration(
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8.0),
-                                    borderSide: BorderSide(color: Colors.black),
+                                    borderSide:
+                                        BorderSide(color: Colors.tealAccent),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(20.0),
-                                    borderSide: BorderSide(color: Colors.black),
+                                    borderSide:
+                                        BorderSide(color: Colors.tealAccent),
                                   ),
                                   filled: true,
-                                  fillColor: Colors.white,
+                                  fillColor: Colors.black,
                                   labelText: 'Role',
+                                  labelStyle: TextStyle(
+                                      color: Colors.tealAccent, fontSize: 15),
                                   prefixIcon: Icon(Icons.person),
+                                  prefixIconColor: Colors.tealAccent,
                                 ),
                               ),
                             ),
                           ),
                         ),
 
-                        //  const SizedBox(height: 9),
+                        const SizedBox(height: 10),
                         GestureDetector(
                           onTap: () async {
                             var imageFile = await ImagePicker()
@@ -1254,11 +1299,11 @@ class _SignupScreenState extends State<SignupScreen> {
                           child: CircleAvatar(
                             radius: MediaQuery.of(context).size.width *
                                 0.10, // Adjust size as needed
-                            backgroundColor: Colors.grey,
+                            backgroundColor: Colors.tealAccent,
                             child: imageFileOfUser == null
                                 ? Icon(
                                     Icons.add_photo_alternate_sharp,
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     size: MediaQuery.of(context).size.width *
                                         0.10, // Adjust size of the icon
                                   )
@@ -1283,29 +1328,28 @@ class _SignupScreenState extends State<SignupScreen> {
                                 .min, // Prevent Row from taking full width
                             children: const [
                               Icon(Icons.info_outline,
-                                  color: Colors.pinkAccent, size: 18),
+                                  color: Colors.white, size: 18),
                               SizedBox(width: 6),
                               Flexible(
                                 child: Text(
                                   'Image must not exceed 5MB',
                                   style: TextStyle(
-                                      fontSize: 13, color: Colors.black),
+                                      fontSize: 13, color: Colors.white),
                                 ),
                               ),
                             ],
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(30.0),
-                          child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 40.0, vertical: 30.0),
+                          child: SizedBox(
                             height: 55,
-                            decoration: BoxDecoration(
-                              color: Color(0xff000000),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            width: double
+                                .infinity, // Ensure it stretches full width
                             child: ElevatedButton(
                               onPressed: userViewModel.isSubmitting.value
-                                  ? null // Disable button during submit
+                                  ? null
                                   : () {
                                       if (!_formKey.currentState!.validate() ||
                                           imageFileOfUser == null) {
@@ -1334,20 +1378,21 @@ class _SignupScreenState extends State<SignupScreen> {
                                       );
                                     },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
+                                backgroundColor: Colors.tealAccent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                               child: Obx(() {
-                                // Use Obx to observe changes to isSubmitting
                                 return userViewModel.isSubmitting.value
-                                    ? CircularProgressIndicator(
-                                        color: Colors
-                                            .white) // Show loading indicator when submitting
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.black)
                                     : const Text(
                                         "submit",
                                         style: TextStyle(
                                           fontWeight: FontWeight.normal,
                                           fontSize: 25.0,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                         ),
                                       );
                               }),

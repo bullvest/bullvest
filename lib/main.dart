@@ -21,9 +21,9 @@ class BullvestApp extends StatelessWidget {
       title: 'Bullvest',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Colors.white,
+        scaffoldBackgroundColor: Colors.black,
         colorScheme: ColorScheme.dark(
-          primary: Colors.black,
+          primary: Colors.tealAccent,
         ),
       ),
       home: SplashScreen(),

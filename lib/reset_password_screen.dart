@@ -58,9 +58,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               colors: [
-                Colors.white,
-                Colors.white,
-                Colors.white,
+                Colors.black,
+                Colors.black,
+                Colors.black,
               ],
             ),
           ),
@@ -71,7 +71,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 "Forgot Password!",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Colors.tealAccent,
                   fontSize: 25.0,
                 ),
                 textAlign: TextAlign.left,
@@ -98,19 +98,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                               decoration: InputDecoration(
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8.0),
-                                  borderSide: BorderSide(color: Colors.black),
+                                  borderSide:
+                                      BorderSide(color: Colors.tealAccent),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(20.0),
-                                  borderSide: BorderSide(color: Colors.black),
+                                  borderSide:
+                                      BorderSide(color: Colors.tealAccent),
                                 ),
                                 filled: true,
-                                fillColor: Colors.white,
+                                fillColor: Colors.tealAccent,
                                 prefixIcon: Icon(Icons.email),
                                 //  hintText: 'Email',
                                 labelText: 'Email',
                                 labelStyle: TextStyle(
-                                    color: Colors.black, fontSize: 15),
+                                    color: Colors.tealAccent, fontSize: 15),
                               ),
                               controller: _emailTextController,
                               validator: (valueEmail) {
@@ -178,14 +180,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.black,
+                                  backgroundColor: Colors.tealAccent,
                                 ),
                                 child: const Text(
                                   "Submit",
                                   style: TextStyle(
                                     fontWeight: FontWeight.normal,
                                     fontSize: 22.0,
-                                    color: Colors.white,
+                                    color: Colors.black,
                                   ),
                                 ),
                               ),
@@ -204,8 +206,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 Text(
                                   'Remember now?',
                                   style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: 12),
+                                      color: Colors.white, fontSize: 14),
                                 ),
                                 Padding(
                                     padding: const EdgeInsets.only(left: 2.0),
@@ -217,7 +218,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                         child: Text(
                                           'Back to Login!',
                                           style: TextStyle(
-                                              color: Colors.black,
+                                              color: Colors.tealAccent,
                                               fontWeight: FontWeight.bold,
                                               fontSize: 17),
                                         ),
