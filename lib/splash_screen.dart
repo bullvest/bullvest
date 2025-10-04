@@ -71,18 +71,12 @@ class _SplashScreenState extends State<SplashScreen> {
       final userDocFuture =
           FirebaseFirestore.instance.collection('users').doc(userId).get();
 
-      final imageFuture = AppConstants.currentUser.displayImage == null
-          ? FirebaseStorage.instance
-              .ref()
-              .child("userImages/$userId/$userId.png")
-              .getData(5 * 1024 * 1024)
-          : Future.value(null);
+      
 
       // Wait for Firestore + image
-      final results = await Future.wait([userDocFuture, imageFuture]);
+      final results = await Future.wait([userDocFuture]);
 
       DocumentSnapshot snapshot = results[0] as DocumentSnapshot;
-      final imageDataInBytes = results[1] as Uint8List?;
 
       // Populate user info
       AppConstants.currentUser.snapshot = snapshot;
@@ -94,9 +88,7 @@ class _SplashScreenState extends State<SplashScreen> {
       AppConstants.currentUser.state = snapshot['state'] ?? "";
 
       // Set image if fetched
-      if (imageDataInBytes != null) {
-        AppConstants.currentUser.displayImage = MemoryImage(imageDataInBytes);
-      }
+      
 
       // Fetch posts in background without blocking
       //  AppConstants.currentUser.getMyPostingsFromFirestore().catchError((e) {

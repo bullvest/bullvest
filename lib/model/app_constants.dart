@@ -9,7 +9,6 @@ class AppConstants {
       id: currentUser.id,
       firstName: currentUser.firstName,
       lastName: currentUser.lastName,
-      displayImage: currentUser.displayImage,
     );
   }
 

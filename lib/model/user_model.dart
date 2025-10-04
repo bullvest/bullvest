@@ -28,7 +28,6 @@ class UserModel extends ContactModel {
     String id = "",
     String firstName = "",
     String lastName = "",
-    MemoryImage? displayImage,
     this.mobileNumber = "",
     this.email = "",
     this.type = "",
@@ -37,8 +36,7 @@ class UserModel extends ContactModel {
   }) : super(
             id: id,
             firstName: firstName,
-            lastName: lastName,
-            displayImage: displayImage) {
+            lastName: lastName) {
     isHost = false;
     isCurrentlyHosting = false;
 
@@ -51,7 +49,6 @@ class UserModel extends ContactModel {
       id: id,
       firstName: firstName,
       lastName: lastName,
-      displayImage: displayImage,
     );
   }
 
