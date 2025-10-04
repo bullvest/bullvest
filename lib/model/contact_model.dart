@@ -8,13 +8,11 @@ class ContactModel {
   String? firstName;
   String? lastName;
   String? fullName;
-  MemoryImage? displayImage;
 
   ContactModel({
     this.id = "",
     this.firstName = "",
     this.lastName = "",
-    this.displayImage,
   });
 
   String getFullNameOfUser() {
@@ -26,7 +24,6 @@ class ContactModel {
       id: id!,
       firstName: firstName!,
       lastName: lastName!,
-      displayImage: displayImage!,
     );
   }
 
@@ -36,22 +33,5 @@ class ContactModel {
 
     firstName = snapshot['firstName'] ?? "";
     lastName = snapshot['lastName'] ?? "";
-  }
-
-  getImageFromStorage() async {
-    if (displayImage != null) {
-      return displayImage!;
-    }
-
-    final imageData = await FirebaseStorage.instance
-        .ref()
-        .child("userImages")
-        .child(id!)
-        .child("$id.png")
-        .getData(1024 * 1024);
-
-    displayImage = MemoryImage(imageData!);
-
-    return displayImage;
   }
 }

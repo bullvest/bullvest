@@ -28,7 +28,6 @@ class UserViewModel {
     String state,
     String mobileNumber,
     String type,
-    File imageFileOfUser,
   ) async {
     isSubmitting.value = true;
     Get.snackbar("Please wait", "Your account is being created...");
@@ -60,9 +59,7 @@ class UserViewModel {
         firstName,
         lastName,
         currentUserID,
-      ).whenComplete(() async {
-        await addImageToFirebaseStorage(imageFileOfUser, currentUserID);
-      });
+      ).whenComplete;
 
       await FirebaseApi().uploadPendingFcmToken(currentUserID);
 
@@ -108,7 +105,7 @@ class UserViewModel {
   }
 
   /// Upload user image to Firebase Storage
-  Future<void> addImageToFirebaseStorage(
+  /*Future<void> addImageToFirebaseStorage(
       File imageFileOfUser, String userId) async {
     Reference ref = FirebaseStorage.instance
         .ref()
@@ -120,7 +117,7 @@ class UserViewModel {
     Uint8List imageBytes = await imageFileOfUser.readAsBytes();
 
     AppConstants.currentUser.displayImage = MemoryImage(imageBytes);
-  }
+  } */
 
   /// Send welcome email
   Future<void> sendWelcomeEmail(
@@ -176,7 +173,7 @@ class UserViewModel {
       // Background data load
       Future.microtask(() async {
         try {
-          await getImageFromStorage(userId);
+          //  await getImageFromStorage(userId);
           await FirebaseApi().uploadPendingFcmToken(userId);
         } catch (e) {
           debugPrint("Background load failed: $e");
@@ -235,11 +232,12 @@ class UserViewModel {
     AppConstants.currentUser.type = snapshot['type'] ?? "";
     AppConstants.currentUser.country = snapshot['country'] ?? "";
     AppConstants.currentUser.state = snapshot['state'] ?? "";
+    AppConstants.currentUser.isHost = snapshot['isHost'] ?? false;
     AppConstants.currentUser.status = (snapshot['status'] ?? 1).toDouble();
   }
 
   /// Get profile image from Firebase Storage
-  Future<ImageProvider?> getImageFromStorage(String userId) async {
+  /*Future<ImageProvider?> getImageFromStorage(String userId) async {
     if (AppConstants.currentUser.displayImage != null) {
       return AppConstants.currentUser.displayImage;
     }
@@ -256,5 +254,5 @@ class UserViewModel {
     }
 
     return AppConstants.currentUser.displayImage;
-  }
+  } */
 }
