@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:bullvest/model/app_constants.dart';
+import 'package:bullvest/founder_dashboard.dart'; // adjust path if needed
 
 class PostStartupForm extends StatefulWidget {
   @override
@@ -14,19 +17,65 @@ class _PostStartupFormState extends State<PostStartupForm> {
   final TextEditingController _fundingController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      // For now, just show a success snackbar (replace with backend call later)
+  bool _isLoading = false;
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // 1. Add startup to 'portfolio'
+      final newDoc =
+          await FirebaseFirestore.instance.collection('portfolio').add({
+        'uid': AppConstants.currentUser.id,
+        'name': _nameController.text.trim(),
+        'industry': _industryController.text.trim(),
+        'stage': _stageController.text.trim(),
+        'funding': _fundingController.text.trim(),
+        'description': _descriptionController.text.trim(),
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      final newStartupId = newDoc.id;
+
+      // 2. Update user's `myPostingIDs` array
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(AppConstants.currentUser.id)
+          .update({
+        'myPostingIDs': FieldValue.arrayUnion([newStartupId]),
+      });
+
+      // 3. Show success message
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Startup posted successfully!')),
+        SnackBar(
+          content: Text('Startup posted successfully!'),
+          backgroundColor: Colors.green,
+        ),
       );
 
-      // Clear form
+      // 4. Clear form fields
       _nameController.clear();
       _industryController.clear();
       _stageController.clear();
       _fundingController.clear();
       _descriptionController.clear();
+
+      // 5. Redirect after a short delay
+      Future.delayed(Duration(seconds: 1), () {
+        Navigator.pop(context);
+      });
+    } catch (e) {
+      print('Error posting startup: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to post startup. Try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -36,81 +85,31 @@ class _PostStartupFormState extends State<PostStartupForm> {
       appBar: AppBar(
         title: Text('Post Your Startup'),
       ),
+      backgroundColor: Colors.black,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
-              TextFormField(
-                controller: _nameController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'Startup Name',
-                  labelStyle: TextStyle(color: Colors.tealAccent),
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.tealAccent)),
-                ),
-                validator: (value) =>
-                    value!.isEmpty ? 'Please enter startup name' : null,
-              ),
+              _buildTextField(_nameController, 'Startup Name'),
               SizedBox(height: 16),
-              TextFormField(
-                controller: _industryController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'Industry',
-                  labelStyle: TextStyle(color: Colors.tealAccent),
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.tealAccent)),
-                ),
-                validator: (value) =>
-                    value!.isEmpty ? 'Please enter industry' : null,
-              ),
+              _buildTextField(_industryController, 'Industry'),
               SizedBox(height: 16),
-              TextFormField(
-                controller: _stageController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'Stage (Idea, MVP, Seed, Series A, etc.)',
-                  labelStyle: TextStyle(color: Colors.tealAccent),
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.tealAccent)),
-                ),
-                validator: (value) =>
-                    value!.isEmpty ? 'Please enter startup stage' : null,
-              ),
+              _buildTextField(
+                  _stageController, 'Stage (Idea, MVP, Seed, etc.)'),
               SizedBox(height: 16),
-              TextFormField(
-                controller: _fundingController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'Funding Needed (e.g., \$100k)',
-                  labelStyle: TextStyle(color: Colors.tealAccent),
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.tealAccent)),
-                ),
-                validator: (value) =>
-                    value!.isEmpty ? 'Please enter funding amount' : null,
-              ),
+              _buildTextField(
+                  _fundingController, 'Funding Needed (e.g., \$100k)'),
               SizedBox(height: 16),
-              TextFormField(
-                controller: _descriptionController,
-                style: TextStyle(color: Colors.white),
-                maxLines: 4,
-                decoration: InputDecoration(
-                  labelText: 'Brief Description',
-                  labelStyle: TextStyle(color: Colors.tealAccent),
-                  enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.tealAccent)),
-                ),
-                validator: (value) =>
-                    value!.isEmpty ? 'Please enter description' : null,
-              ),
+              _buildTextField(_descriptionController, 'Brief Description',
+                  maxLines: 4),
               SizedBox(height: 30),
               ElevatedButton(
-                onPressed: _submitForm,
-                child: Text('Post Startup'),
+                onPressed: _isLoading ? null : _submitForm,
+                child: _isLoading
+                    ? CircularProgressIndicator(color: Colors.black)
+                    : Text('Post Startup'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.tealAccent,
                   foregroundColor: Colors.black,
@@ -122,6 +121,23 @@ class _PostStartupFormState extends State<PostStartupForm> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label,
+      {int maxLines = 1}) {
+    return TextFormField(
+      controller: controller,
+      style: TextStyle(color: Colors.white),
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.tealAccent),
+        enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.tealAccent)),
+      ),
+      validator: (value) =>
+          value!.isEmpty ? 'Please enter $label.toLowerCase()' : null,
     );
   }
 }

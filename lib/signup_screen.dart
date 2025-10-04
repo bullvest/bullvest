@@ -669,8 +669,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
   final _formKey = GlobalKey<FormState>();
 
-  File? imageFileOfUser;
-
   bool _isSubmitting = false; // Track whether the form is being submitted
   String password = ''; // Initialize the password variable
   bool showPassword = false; // Initialize the showPassword flag
@@ -1281,46 +1279,6 @@ class _SignupScreenState extends State<SignupScreen> {
                             ),
                           ),
                         ),
-
-                        const SizedBox(height: 10),
-                        GestureDetector(
-                          onTap: () async {
-                            var imageFile = await ImagePicker()
-                                .pickImage(source: ImageSource.gallery);
-                            if (imageFile != null) {
-                              imageFileOfUser =
-                                  File(imageFile.path); // Save the image file
-
-                              setState(() {
-                                // Trigger UI update when a new image is selected
-                              });
-                            }
-                          },
-                          child: CircleAvatar(
-                            radius: MediaQuery.of(context).size.width *
-                                0.10, // Adjust size as needed
-                            backgroundColor: Colors.tealAccent,
-                            child: imageFileOfUser == null
-                                ? Icon(
-                                    Icons.add_photo_alternate_sharp,
-                                    color: Colors.black,
-                                    size: MediaQuery.of(context).size.width *
-                                        0.10, // Adjust size of the icon
-                                  )
-                                : ClipOval(
-                                    child: Image.file(
-                                      imageFileOfUser!,
-                                      width: MediaQuery.of(context).size.width *
-                                          0.20, // Adjust the size of the image
-                                      height:
-                                          MediaQuery.of(context).size.width *
-                                              0.20,
-                                      fit: BoxFit
-                                          .cover, // Ensure the image covers the circle
-                                    ),
-                                  ),
-                          ),
-                        ),
                         const SizedBox(height: 2),
                         Center(
                           child: Row(
@@ -1351,12 +1309,6 @@ class _SignupScreenState extends State<SignupScreen> {
                               onPressed: userViewModel.isSubmitting.value
                                   ? null
                                   : () {
-                                      if (!_formKey.currentState!.validate() ||
-                                          imageFileOfUser == null) {
-                                        Get.snackbar("field missing",
-                                            "Please choose image and complete form");
-                                        return;
-                                      }
                                       if (_emailTextController.text.isEmpty &&
                                           _passwordTextController
                                               .text.isEmpty) {
@@ -1374,7 +1326,6 @@ class _SignupScreenState extends State<SignupScreen> {
                                         selectedState!,
                                         _mobileNumberTextController.text.trim(),
                                         selectedRole!,
-                                        imageFileOfUser!,
                                       );
                                     },
                               style: ElevatedButton.styleFrom(
