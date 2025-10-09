@@ -69,9 +69,28 @@ class FounderDashboard extends StatelessWidget {
                             data['name'] ?? 'No name',
                             style: TextStyle(color: Colors.tealAccent),
                           ),
-                          subtitle: Text(
-                            data['description'] ?? 'No description',
-                            style: TextStyle(color: Colors.grey[400]),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                data['description'] ?? 'No description',
+                                style: TextStyle(color: Colors.grey[400]),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                data['funding'] ?? 'Not available',
+                                style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontStyle: FontStyle.italic),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                data['status'] ?? 'Not available',
+                                style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontStyle: FontStyle.italic),
+                              ),
+                            ],
                           ),
                           trailing: PopupMenuButton<String>(
                             color: Colors.grey[800],
@@ -103,8 +122,8 @@ class FounderDashboard extends StatelessWidget {
             SizedBox(height: 6),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (_) => PostStartupForm()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => PostStartupForm()));
               },
               child: Text('Post Your Startup'),
               style: ElevatedButton.styleFrom(
@@ -124,9 +143,11 @@ class FounderDashboard extends StatelessWidget {
     );
   }
 
-  void _showEditDialog(BuildContext context, String docId, Map<String, dynamic> data) {
+  void _showEditDialog(
+      BuildContext context, String docId, Map<String, dynamic> data) {
     final nameController = TextEditingController(text: data['name']);
-    final descriptionController = TextEditingController(text: data['description']);
+    final descriptionController =
+        TextEditingController(text: data['description']);
 
     showDialog(
       context: context,
@@ -139,12 +160,15 @@ class FounderDashboard extends StatelessWidget {
             TextField(
               controller: nameController,
               style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(labelText: 'Name', labelStyle: TextStyle(color: Colors.grey)),
+              decoration: InputDecoration(
+                  labelText: 'Name', labelStyle: TextStyle(color: Colors.grey)),
             ),
             TextField(
               controller: descriptionController,
               style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(labelText: 'Description', labelStyle: TextStyle(color: Colors.grey)),
+              decoration: InputDecoration(
+                  labelText: 'Description',
+                  labelStyle: TextStyle(color: Colors.grey)),
               maxLines: 3,
             ),
           ],
@@ -156,7 +180,10 @@ class FounderDashboard extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              await FirebaseFirestore.instance.collection('portfolio').doc(docId).update({
+              await FirebaseFirestore.instance
+                  .collection('portfolio')
+                  .doc(docId)
+                  .update({
                 'name': nameController.text,
                 'description': descriptionController.text,
               });
@@ -187,7 +214,10 @@ class FounderDashboard extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              await FirebaseFirestore.instance.collection('portfolio').doc(docId).delete();
+              await FirebaseFirestore.instance
+                  .collection('portfolio')
+                  .doc(docId)
+                  .delete();
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),

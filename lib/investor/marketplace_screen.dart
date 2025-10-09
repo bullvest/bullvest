@@ -15,9 +15,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   final Set<String> matchedDocIds = {};
   final TextEditingController searchController = TextEditingController();
   String searchQuery = '';
+  bool showStartups = true; // Toggle flag
 
   Map<String, String> userCache = {};
-  bool showStartups = true; // Toggle flag
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +25,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title:
-            Text(showStartups ? 'Startup Opportunities' : 'Investor Profiles'),
+        title: Text(
+          showStartups ? 'Startup Opportunities' : 'Investor Profiles',
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.search, color: Colors.tealAccent),
@@ -49,7 +50,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     );
   }
 
-  // 🔁 STARTUPS
+  // 🔁 STARTUP LIST
   Widget _buildStartupList() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
@@ -57,10 +58,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
           .orderBy('createdAt', descending: true)
           .snapshots(),
       builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return _buildError('Error loading startups.');
-        }
-
+        if (snapshot.hasError) return _buildError('Error loading startups.');
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildLoading();
         }
@@ -81,9 +79,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               status.contains(query);
         }).toList();
 
-        if (filteredDocs.isEmpty) {
-          return _buildMessage('No startups found.');
-        }
+        if (filteredDocs.isEmpty) return _buildMessage('No startups found.');
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
@@ -105,7 +101,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             return FutureBuilder<String>(
               future: _getUserFullName(uid),
               builder: (context, snapshot) {
-                final fullName = snapshot.data ?? 'Unknown User';
+                final fullName = snapshot.data ?? 'Unknown Founder';
 
                 return Card(
                   color: Colors.grey[900],
@@ -136,29 +132,18 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                             style: TextStyle(color: Colors.white)),
                         SizedBox(height: 12),
                         ElevatedButton(
-                          onPressed: isMatched
-                              ? () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => ChatScreen(name: name),
-                                    ),
-                                  );
-                                }
-                              : () {
-                                  setState(() {
-                                    matchedDocIds.add(docId);
-                                  });
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('You matched with $name'),
-                                    ),
-                                  );
-                                },
-                          child: Text(isMatched ? 'Message' : 'Match'),
+                          onPressed: () {
+                            // Connect via chat
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ChatScreen(name: fullName),
+                              ),
+                            );
+                          },
+                          child: Text('Connect'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                isMatched ? Colors.teal : Colors.tealAccent,
+                            backgroundColor: Colors.tealAccent,
                             foregroundColor: Colors.black,
                           ),
                         ),
@@ -174,7 +159,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     );
   }
 
-  // 🔁 INVESTORS
+  // 🔁 INVESTOR LIST
   Widget _buildInvestorList() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
@@ -182,10 +167,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
           .where('type', isEqualTo: 'investor')
           .snapshots(),
       builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return _buildError('Error loading investors.');
-        }
-
+        if (snapshot.hasError) return _buildError('Error loading investors.');
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildLoading();
         }
@@ -205,9 +187,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               interests.contains(query);
         }).toList();
 
-        if (filteredDocs.isEmpty) {
-          return _buildMessage('No investors found.');
-        }
+        if (filteredDocs.isEmpty) return _buildMessage('No investors found.');
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
@@ -254,7 +234,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     );
   }
 
-  // 🔁 Full name from users collection
+  // 🔁 Get full name using UID from users collection
   Future<String> _getUserFullName(String uid) async {
     if (userCache.containsKey(uid)) {
       return userCache[uid]!;

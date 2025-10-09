@@ -35,6 +35,7 @@ class _PostStartupFormState extends State<PostStartupForm> {
         'funding': _fundingController.text.trim(),
         'description': _descriptionController.text.trim(),
         'createdAt': FieldValue.serverTimestamp(),
+        'status': 'open',
       });
 
       final newStartupId = newDoc.id;
