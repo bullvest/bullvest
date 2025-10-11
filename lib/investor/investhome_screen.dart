@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'investor_dashboard.dart';
+import 'investors_dashboard.dart';
 import 'marketplace_screen.dart';
 import 'package:bullvest/profile_screen.dart';
 
@@ -28,15 +28,15 @@ class _InvestorHomeScreenState extends State<InvestorHomeScreen> {
 
     if (widget.userRole == 'investor') {
       _pages = [
-        InvestorHomeScreen(userRole: 'investor'),
+        InvestorsDashboard(userRole: 'investor'),
         MarketplaceScreen(userRole: 'investor'),
         ProfileScreen(), // optional profile/settings
       ];
     } else {
       _pages = [
         //  FounderDashboard(onLogout: _logout),
-        MarketplaceScreen(userRole: 'founder'),
-        ProfileScreen(),
+        // MarketplaceScreen(userRole: 'founder'),
+        // ProfileScreen(),
       ];
     }
   }
