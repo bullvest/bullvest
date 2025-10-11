@@ -37,21 +37,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return Scaffold(
       //  backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.white,
-                Colors.white,
-              ],
-              begin: FractionalOffset(0, 0),
-              end: FractionalOffset(1, 0),
-              stops: [0, 1],
-              tileMode: TileMode.clamp,
-            ),
-          ),
-        ),
+        title: Text('Forgot Password'),
+        backgroundColor: Colors.black,
+        elevation: 0,
       ),
       body: Container(
           decoration: const BoxDecoration(
@@ -65,18 +53,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ),
           ),
           child: ListView(children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 30.0, right: 20.0),
-              child: const Text(
-                "Forgot Password!",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.tealAccent,
-                  fontSize: 25.0,
-                ),
-                textAlign: TextAlign.left,
-              ),
-            ),
             Center(
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -107,7 +83,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                       BorderSide(color: Colors.tealAccent),
                                 ),
                                 filled: true,
-                                fillColor: Colors.tealAccent,
+                                fillColor: Colors.black,
                                 prefixIcon: Icon(Icons.email),
                                 //  hintText: 'Email',
                                 labelText: 'Email',
@@ -232,7 +208,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             height: 5,
                           ),
 
-                          // continue with
+                          // continue 
                         ],
                       ),
                     ),

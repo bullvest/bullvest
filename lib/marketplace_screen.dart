@@ -135,7 +135,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                         Text(description,
                             style: TextStyle(color: Colors.white)),
                         SizedBox(height: 12),
-                        ElevatedButton(
+                        /**   ElevatedButton(
                           onPressed: isMatched
                               ? () {
                                   Navigator.push(
@@ -161,7 +161,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                                 isMatched ? Colors.teal : Colors.tealAccent,
                             foregroundColor: Colors.black,
                           ),
-                        ),
+                        ), */
                       ],
                     ),
                   ),
@@ -179,7 +179,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('users')
-          .where('type', isEqualTo: 'investor')
+          .where('type', isEqualTo: 'Investor')
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {

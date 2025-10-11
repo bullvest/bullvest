@@ -943,7 +943,7 @@ class _SignupScreenState extends State<SignupScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 30.0, right: 20.0),
                 child: const Text(
-                  "Create an account to continue.",
+                  "Create an account",
                   style: TextStyle(
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
@@ -1013,8 +1013,8 @@ class _SignupScreenState extends State<SignupScreen> {
                               filled: true,
                               fillColor: Colors.black,
                               labelText: 'Password',
-                              labelStyle:
-                                  TextStyle(color: Colors.black, fontSize: 15),
+                              labelStyle: TextStyle(
+                                  color: Colors.tealAccent, fontSize: 15),
                               prefixIcon: Icon(Icons.lock),
                               prefixIconColor: Colors.tealAccent,
                               suffixIcon: IconButton(
@@ -1107,8 +1107,8 @@ class _SignupScreenState extends State<SignupScreen> {
                               filled: true,
                               fillColor: Colors.black,
                               labelText: 'Last Name',
-                              labelStyle:
-                                  TextStyle(color: Colors.black, fontSize: 15),
+                              labelStyle: TextStyle(
+                                  color: Colors.tealAccent, fontSize: 15),
                               prefixIcon: Icon(Icons.person),
                               prefixIconColor: Colors.tealAccent,
                             ),
@@ -1280,24 +1280,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Center(
-                          child: Row(
-                            mainAxisSize: MainAxisSize
-                                .min, // Prevent Row from taking full width
-                            children: const [
-                              Icon(Icons.info_outline,
-                                  color: Colors.white, size: 18),
-                              SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  'Image must not exceed 5MB',
-                                  style: TextStyle(
-                                      fontSize: 13, color: Colors.white),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+
                         Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 40.0, vertical: 30.0),

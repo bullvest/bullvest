@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
-class InvestorHomeScreen extends StatefulWidget {
+class InvestorsDashboard extends StatefulWidget {
   final String userRole;
 
-  const InvestorHomeScreen({required this.userRole, Key? key})
+  const InvestorsDashboard({required this.userRole, Key? key})
       : super(key: key);
 
   @override
-  State<InvestorHomeScreen> createState() => _InvestorHomeScreenState();
+  State<InvestorsDashboard> createState() => _InvestorsDashboardState();
 }
 
-class _InvestorHomeScreenState extends State<InvestorHomeScreen> {
+class _InvestorsDashboardState extends State<InvestorsDashboard> {
   bool isVerified = false;
   bool isLoading = true;
   String investorId = FirebaseAuth.instance.currentUser!.uid;
