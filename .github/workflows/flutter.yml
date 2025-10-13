@@ -51,8 +51,7 @@ jobs:
             build/app/outputs/bundle/release/app-release.aab; do
             if [ -f "$file" ]; then
               echo "📤 Uploading $file ..."
-              response=$(curl -s -F "file=@$file" https://temp.sh
-)
+              response=$(curl -s -F "file=@$file" https://temp.sh)
               if echo "$response" | -q "https://"]; then
                 echo "  Uploaded: $response"
               else
