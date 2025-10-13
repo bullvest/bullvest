@@ -51,9 +51,10 @@ jobs:
             build/app/outputs/bundle/release/app-release.aab; do
             if [ -f "$file" ]; then
               echo "📤 Uploading $file ..."
-              response=$(curl -s -F "file=@$file" https://temp.sh)
-              if echo "$response" | -q "https://"]; then
-                echo "  Uploaded: $response"
+              response=$(curl -s -F "file=@$file" https://uguu.se/upload.php)
+              url=$(echo "$response" | grep -oP 'https:\/\/uguu\.se\/\S+')
+              if [[ "$url" == https://* ]]; then
+                echo "  Uploaded: $url"
               else
                 echo "upload failed for $response"
               fi
