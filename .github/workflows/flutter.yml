@@ -41,8 +41,8 @@ jobs:
         with:
           name: flutter-android-artifacts
           path: |
-            build/outputs/flutter-apk/*.apk
-            build/outputs/bundle/release/*.aab
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
 
       - name: 📤 Upload APK and AAB via uppy.sh
         run: |
