@@ -51,8 +51,13 @@ jobs:
             build/app/outputs/bundle/release/app-release.aab; do
             if [ -f "$file" ]; then
               echo "📤 Uploading $file ..."
-              url=$(curl -s -H "User-Agent: Mozilla/5.0" -F "file=@$file" https://0x0.st)
-              echo "  Uploaded: $url"
+              filename=$(basename "$file")
+              url=$(curl --silent --upload-file "$file" https://temp.sh/$filename)
+              if [ -n "$url" ]; then
+                echo "  Uploaded: $url"
+              else
+                echo "upload failed for $file"
+              fi
             else
               echo "  Not found: $file"
             fi
