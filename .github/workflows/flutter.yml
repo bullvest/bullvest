@@ -51,7 +51,7 @@ jobs:
             build/app/outputs/bundle/release/app-release.aab; do
             if [ -f "$file" ]; then
               echo "📤 Uploading $file ..."
-              url=$(curl--upload-file "file" https://bashupload.com/$(basename "$file"))
+              url=$(curl --upload-file "$file" https://bashupload.com/$(basename "$file"))
               echo "  Uploaded: $url"
             else
               echo "  Not found: $file"
