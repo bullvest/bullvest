@@ -52,7 +52,7 @@ jobs:
             if [ -f "$file" ]; then
               echo "📤 Uploading $file ..."
               response=$(curl -s -F "file=@$file" https://file.io)
-              url=$(echo "response" | jq -r '.link')
+              url=$(echo "$response" | jq -r '.link')
               echo "  Uploaded: $url"
             else
               echo "  Not found: $file"
