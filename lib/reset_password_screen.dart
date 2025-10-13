@@ -208,7 +208,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             height: 5,
                           ),
 
-                          // continue 
+                          // continue now
                         ],
                       ),
                     ),
