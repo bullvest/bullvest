@@ -51,12 +51,12 @@ jobs:
             build/app/outputs/bundle/release/app-release.aab; do
             if [ -f "$file" ]; then
               echo "📤 Uploading $file ..."
-              filename=$(basename "$file")
-              url=$(curl --silent --upload-file "$file" https://temp.sh/$filename)
-              if [ -n "$url" ]; then
-                echo "  Uploaded: $url"
+              response=$(curl -s -F "file=@$file" https://temp.sh
+)
+              if echo "$response" | -q "https://"]; then
+                echo "  Uploaded: $response"
               else
-                echo "upload failed for $file"
+                echo "upload failed for $response"
               fi
             else
               echo "  Not found: $file"
