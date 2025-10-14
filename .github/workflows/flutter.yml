@@ -54,7 +54,7 @@ jobs:
               response=$(curl -s -F "file=@$file" https://store1.gofile.io/uploadFile)
               url=$(echo "$response" | jq -r '.data.downloadPage')
 
-              if [ "$url" != "null"]; then
+              if [ "$url" != "null" ]; then
                 echo "  Uploaded: $url"
               else
                 echo "upload failed for $response"
