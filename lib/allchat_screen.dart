@@ -37,37 +37,37 @@ class _AllChatsScreenState extends State<AllChatsScreen> {
             );
           }
 
-          // For each chat, get its latest message timestamp
-          return FutureBuilder<List<Map<String, dynamic>>>(
-            future: _getChatsWithLatestMessages(chats),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(color: Colors.tealAccent),
-                );
-              }
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: chats.length,
+            itemBuilder: (context, index) {
+              final chatDoc = chats[index];
+              final chatData = chatDoc.data() as Map<String, dynamic>;
+              final participants =
+                  List<String>.from(chatData['participants'] ?? []);
+              final otherUserId =
+                  participants.firstWhere((id) => id != currentUserId);
+              final startupId = chatData['startupId'] ?? '';
+              final dealStatus = chatData['dealStatus'] ?? 'open';
 
-              final chatsWithLatest = snapshot.data!;
+              return StreamBuilder<QuerySnapshot>(
+                // Listen for the latest message in the chat
+                stream: FirebaseFirestore.instance
+                    .collection('chats')
+                    .doc(chatDoc.id)
+                    .collection('messages')
+                    .orderBy('createdAt', descending: true)
+                    .limit(1)
+                    .snapshots(),
+                builder: (context, messageSnapshot) {
+                  if (!messageSnapshot.hasData) {
+                    return const SizedBox(); // Empty until messages are fetched
+                  }
 
-              // Sort chats by latest message timestamp descending
-              chatsWithLatest.sort((a, b) {
-                final tsA = a['latestMessageTime'] as Timestamp?;
-                final tsB = b['latestMessageTime'] as Timestamp?;
-                return (tsB ?? Timestamp(0, 0))
-                    .compareTo(tsA ?? Timestamp(0, 0));
-              });
-
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: chatsWithLatest.length,
-                itemBuilder: (context, index) {
-                  final chatInfo = chatsWithLatest[index];
-                  final chatData = chatInfo['chatData'] as Map<String, dynamic>;
-                  final chatDocId = chatInfo['chatDocId'] as String;
-                  final lastMessage = chatInfo['lastMessage'] as String;
-                  final otherUserId = chatInfo['otherUserId'] as String;
-                  final startupId = chatData['startupId'] ?? '';
-                  final dealStatus = chatData['dealStatus'] ?? 'open';
+                  final latestMessageDoc = messageSnapshot.data!.docs.first;
+                  final lastMessage = latestMessageDoc['text'] ?? '';
+                  final latestMessageTime =
+                      latestMessageDoc['createdAt'] as Timestamp?;
                   final unreadCount =
                       (chatData['unread']?[currentUserId] ?? 0) as int;
 
@@ -164,43 +164,5 @@ class _AllChatsScreenState extends State<AllChatsScreen> {
         },
       ),
     );
-  }
-
-  Future<List<Map<String, dynamic>>> _getChatsWithLatestMessages(
-      List<QueryDocumentSnapshot> chats) async {
-    final List<Map<String, dynamic>> result = [];
-
-    for (var chatDoc in chats) {
-      final chatData = chatDoc.data() as Map<String, dynamic>;
-      final participants = List<String>.from(chatData['participants'] ?? []);
-      final otherUserId = participants.firstWhere((id) => id != currentUserId);
-
-      // Get latest message
-      final messagesQuery = await FirebaseFirestore.instance
-          .collection('chats')
-          .doc(chatDoc.id)
-          .collection('messages')
-          .orderBy('createdAt', descending: true)
-          .limit(1)
-          .get();
-
-      String lastMessage = '';
-      Timestamp? latestMessageTime;
-      if (messagesQuery.docs.isNotEmpty) {
-        final msgData = messagesQuery.docs.first.data();
-        lastMessage = msgData['text'] ?? '';
-        latestMessageTime = msgData['createdAt'] as Timestamp?;
-      }
-
-      result.add({
-        'chatDocId': chatDoc.id,
-        'chatData': chatData,
-        'otherUserId': otherUserId,
-        'lastMessage': lastMessage,
-        'latestMessageTime': latestMessageTime,
-      });
-    }
-
-    return result;
   }
 }

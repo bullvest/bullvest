@@ -15,6 +15,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isFounder = false;
   bool _isUpdatingRole = false;
+  bool _isEditingProfile = false;
 
   Future<Map<String, dynamic>> _fetchUserDataWithStartups() async {
     final userDoc = await FirebaseFirestore.instance
@@ -114,6 +115,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _roleSwitchCard(),
                 const SizedBox(height: 24),
                 _infoCard(userData, startupDetails),
+                const SizedBox(height: 24),
+                if (!_isEditingProfile) _editProfileButton(userData),
                 const SizedBox(height: 24),
                 _startupsSection(startupDetails),
                 const SizedBox(height: 32),
@@ -221,6 +224,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  // Edit profile button
+  Widget _editProfileButton(Map<String, dynamic> userData) {
+    return ElevatedButton(
+      onPressed: () async {
+        setState(() {
+          _isEditingProfile = true;
+        });
+        await _editProfile(userData);
+        setState(() {
+          _isEditingProfile = false;
+        });
+      },
+      style: ElevatedButton.styleFrom(backgroundColor: Colors.tealAccent),
+      child: const Text('Edit Profile'),
     );
   }
 

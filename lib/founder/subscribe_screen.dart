@@ -30,7 +30,7 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
           customerEmail: AppConstants.currentUser.email ?? '',
           reference: ref,
           currency: "NGN",
-          amount: amount * 100,
+          amount: amount * 1,
           callbackUrl: "https://google.com",
           transactionCompleted: (paymentData) async {
             if (!mounted) return;
