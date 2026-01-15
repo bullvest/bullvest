@@ -29,38 +29,32 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
       context: context,
       currency: 'NGN',
       customerEmail: AppConstants.currentUser.email ?? '',
-      amount: (amount * 100).toString(), // in kobo
+      amount: (amount * 100).toString(),
       reference: ref,
-      callBackUrl: "",
-
       onClosed: () {
         if (!mounted) return;
         setState(() => _loading = false);
         _showError('Payment cancelled');
       },
-
       onSuccess: () async {
-        if (!mounted) return;
-
-        // ✅ Close the Paystack popup first
-        Navigator.of(context).pop();
-
         // 1️⃣ Activate subscription
         await SubscriptionService.activateSubscription(
-          AppConstants.currentUser.id ?? '',
+          AppConstants.currentUser.id!,
           ref,
         );
 
         if (!mounted) return;
         setState(() => _loading = false);
 
-        // 2️⃣ Navigate to SubscriptionSuccessScreen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => SubscriptionSuccessScreen(),
-          ),
-        );
+        // 2️⃣ Wait one frame, then navigate using ROOT navigator
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (_) => const SubscriptionSuccessScreen(),
+            ),
+            (route) => false,
+          );
+        });
       },
     );
   }

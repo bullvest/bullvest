@@ -19,16 +19,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Startup Marketplace'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.tealAccent),
-            onPressed: () => _showSearchDialog(context),
-          ),
-        ],
-      ),
       body: _buildStartupList(),
     );
   }
@@ -122,31 +112,13 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: canConnect
-                            ? () async {
-                                await FirebaseFirestore.instance
-                                    .collection('portfolio')
-                                    .doc(startupId)
-                                    .update({
-                                  'status': 'deal_in_progress',
-                                  'dealInvestorId': AppConstants.currentUser.id,
-                                  'updatedAt': FieldValue.serverTimestamp(),
-                                });
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => StartupDetailScreen(
-                                        startupId: startupId),
-                                  ),
-                                );
-                              }
-                            : null,
+                        onPressed: () =>
+                            StartupDetailScreen(startupId: startupId),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _statusColor(status),
                           foregroundColor: Colors.black,
                         ),
-                        child: Text(_statusText(status)),
+                        child: Text('connect'),
                       ),
                     )
                   ],

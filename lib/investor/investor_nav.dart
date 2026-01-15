@@ -19,6 +19,12 @@ class _InvestorBottomNavState extends State<InvestorBottomNav> {
     ProfileScreen(),
   ];
 
+  final titles = const [
+    'Startup Marketplace',
+    'Chats',
+    'Profile',
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:bullvest/model/app_constants.dart';
 import 'package:bullvest/login_screen.dart';
+import 'package:bullvest/investor/startup_detail.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -74,23 +75,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<void> _editField(String field, String currentValue) async {
-    final controller = TextEditingController(text: currentValue);
+  Future<void> _editProfile(Map<String, dynamic> userData) async {
+    final firstNameController =
+        TextEditingController(text: userData['firstName']);
+    final lastNameController =
+        TextEditingController(text: userData['lastName']);
+    final mobileController =
+        TextEditingController(text: userData['mobileNumber']);
+    final countryController = TextEditingController(text: userData['country']);
+    final stateController = TextEditingController(text: userData['state']);
 
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: Text(
-          'Edit $field',
-          style: const TextStyle(color: Colors.tealAccent),
+        title: const Text(
+          'Edit Profile',
+          style: TextStyle(color: Colors.tealAccent),
         ),
-        content: TextField(
-          controller: controller,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            hintText: 'Enter $field',
-            hintStyle: TextStyle(color: Colors.grey[500]),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildTextField('First Name', firstNameController),
+              _buildTextField('Last Name', lastNameController),
+              _buildTextField('Mobile', mobileController),
+              _buildTextField('Country', countryController),
+              _buildTextField('State', stateController),
+            ],
           ),
         ),
         actions: [
@@ -104,13 +115,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
               await FirebaseFirestore.instance
                   .collection('users')
                   .doc(AppConstants.currentUser.id)
-                  .update({field: controller.text.trim()});
+                  .update({
+                'firstName': firstNameController.text.trim(),
+                'lastName': lastNameController.text.trim(),
+                'mobileNumber': mobileController.text.trim(),
+                'country': countryController.text.trim(),
+                'state': stateController.text.trim(),
+              });
               Navigator.pop(context);
               setState(() {});
             },
             child: const Text('Save', style: TextStyle(color: Colors.black)),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.tealAccent),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey[700]!),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.tealAccent),
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
       ),
     );
   }
@@ -147,12 +186,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _profileHeader(userData),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 _roleSwitchCard(),
-                const SizedBox(height: 24),
-                _editableInfoCard(userData),
-                const SizedBox(height: 24),
-                _startupsSection(startups),
+                const SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _editProfile(userData),
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Edit Profile'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.tealAccent,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 28, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 30),
+                _isFounder
+                    ? _startupsSection(startups)
+                    : _investorPortfolioSection(startups),
                 const SizedBox(height: 32),
                 _logoutButton(context),
               ],
@@ -162,8 +217,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-
-  // ===================== UI COMPONENTS =====================
 
   Widget _profileHeader(Map<String, dynamic> userData) {
     return Row(
@@ -222,10 +275,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              _isFounder
-                  ? 'Founder: tap toggle to enter Investor mode'
-                  : 'Investor: tap toggle to enter Founder mode',
-              style: const TextStyle(color: Colors.white70),
+              _isFounder ? 'Founder' : 'Investor',
+              style: const TextStyle(color: Colors.white70, fontSize: 15),
             ),
             const SizedBox(height: 8),
             Row(
@@ -246,40 +297,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _editableInfoCard(Map<String, dynamic> userData) {
-    return Card(
-      color: Colors.grey[900],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _editableRow('firstName', 'First Name', userData['firstName']),
-            _editableRow('lastName', 'Last Name', userData['lastName']),
-            _editableRow('mobileNumber', 'Mobile', userData['mobileNumber']),
-            _editableRow('country', 'Country', userData['country']),
-            _editableRow('state', 'State', userData['state']),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _editableRow(String field, String label, String value) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(label, style: const TextStyle(color: Colors.tealAccent)),
-      subtitle: Text(
-        value ?? 'N/A',
-        style: const TextStyle(color: Colors.white),
-      ),
-      trailing: IconButton(
-        icon: const Icon(Icons.edit, color: Colors.tealAccent),
-        onPressed: () => _editField(field, value ?? ''),
-      ),
-    );
-  }
-
   Widget _startupsSection(List<Map<String, dynamic>> startups) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,10 +304,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const Text(
           'Your Startups',
           style: TextStyle(
-            color: Colors.tealAccent,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+              color: Colors.tealAccent,
+              fontSize: 16,
+              fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         startups.isEmpty
@@ -299,7 +315,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(color: Colors.grey[400]),
               )
             : SizedBox(
-                height: 140,
+                height: 160,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: startups.length,
@@ -307,6 +323,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   itemBuilder: (context, index) {
                     final startup = startups[index];
                     return _startupCard(startup);
+                  },
+                ),
+              ),
+      ],
+    );
+  }
+
+  Widget _investorPortfolioSection(List<Map<String, dynamic>> startups) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Invested Startups',
+          style: TextStyle(
+              color: Colors.tealAccent,
+              fontSize: 16,
+              fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        startups.isEmpty
+            ? Text(
+                'No startups invested yet.',
+                style: TextStyle(color: Colors.grey[400]),
+              )
+            : SizedBox(
+                height: 160,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: startups.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final startup = startups[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => StartupDetailScreen(
+                              startupId: startup['id'],
+                            ),
+                          ),
+                        );
+                      },
+                      child: _startupCard(startup),
+                    );
                   },
                 ),
               ),
