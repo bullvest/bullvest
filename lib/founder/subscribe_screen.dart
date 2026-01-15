@@ -20,18 +20,21 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
 
     final reference = DateTime.now().millisecondsSinceEpoch.toString();
 
-    try {
-      final response = await PaystackService.chargeCard(
-        amount: 10000, // ₦10,000
-        email: AppConstants.currentUser.email ?? '', // Fix for null safety
-        reference: reference,
-      );
+    PaystackService.openCheckout(
+      context: context,
+      amount: 10000, // ₦10,000
+      email: AppConstants.currentUser.email ?? '',
+      reference: reference,
 
-      if (response != null && response.status) {
+      onSuccess: () async {
         await SubscriptionService.activateSubscription(
           AppConstants.currentUser.id ?? '',
           reference,
         );
+
+        if (!mounted) return;
+
+        setState(() => _loading = false);
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -41,14 +44,16 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
         );
 
         Navigator.pop(context);
-      } else {
-        _showError('Payment cancelled or failed');
-      }
-    } catch (e) {
-      _showError('Payment failed. Try again.');
-    }
+      },
 
-    setState(() => _loading = false);
+      onClosed: () {
+        if (!mounted) return;
+
+        setState(() => _loading = false);
+
+        _showError('Payment cancelled');
+      },
+    );
   }
 
   void _showError(String message) {
