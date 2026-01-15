@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../profile_screen.dart';
 import 'founder_dashboard.dart';
+import 'package:bullvest/allchat_screen.dart';
 
 class FounderBottomNav extends StatefulWidget {
   const FounderBottomNav({Key? key}) : super(key: key);
@@ -14,11 +15,13 @@ class _FounderBottomNavState extends State<FounderBottomNav> {
 
   final pages = const [
     FounderDashboard(),
+    AllChatsScreen(),
     ProfileScreen(),
   ];
 
   final titles = const [
     'Founder Dashboard',
+    'Chats',
     'Profile',
   ];
 
@@ -45,6 +48,10 @@ class _FounderBottomNavState extends State<FounderBottomNav> {
           BottomNavigationBarItem(
             icon: Icon(Icons.business_center),
             label: 'Startups',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.message),
+            label: 'Chat',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

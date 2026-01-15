@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../profile_screen.dart';
-import 'investhome_screen.dart';
+import 'package:bullvest/investor/marketplace_screen.dart';
+import 'package:bullvest/allchat_screen.dart';
 
 class InvestorBottomNav extends StatefulWidget {
   const InvestorBottomNav({Key? key}) : super(key: key);
@@ -13,7 +14,8 @@ class _InvestorBottomNavState extends State<InvestorBottomNav> {
   int _index = 0;
 
   final pages = const [
-    InvestorBottomNav(),
+    MarketplaceScreen(),
+    AllChatsScreen(),
     ProfileScreen(),
   ];
 
@@ -30,7 +32,11 @@ class _InvestorBottomNavState extends State<InvestorBottomNav> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.trending_up),
-            label: 'Invest',
+            label: 'Marketplace',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.message),
+            label: 'Chat',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

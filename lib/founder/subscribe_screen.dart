@@ -4,6 +4,8 @@ import 'package:bullvest/model/app_constants.dart';
 import 'package:bullvest/services/paystack_service.dart';
 import 'subscription_service.dart';
 import 'package:bullvest/view_model/user_view_model.dart';
+import 'package:bullvest/founder/subscription_success.dart';
+import 'package:flutter_paystack_plus/flutter_paystack_plus.dart';
 
 class SubscribeScreen extends StatefulWidget {
   const SubscribeScreen({Key? key}) : super(key: key);
@@ -15,43 +17,54 @@ class SubscribeScreen extends StatefulWidget {
 class _SubscribeScreenState extends State<SubscribeScreen> {
   bool _loading = false;
 
-  Future<void> _subscribe() async {
+  void _subscribe() {
     setState(() => _loading = true);
 
-    final reference = DateTime.now().millisecondsSinceEpoch.toString();
+    final ref = DateTime.now().millisecondsSinceEpoch.toString();
+    const amount = 10000;
 
-    PaystackService.openCheckout(
+    FlutterPaystackPlus.openPaystackPopup(
+      publicKey: "pk_test_ffbb61e55a4ad2c3b47ee2861998286a80b9b3e0",
+      secretKey: "sk_test_92972a84b747f18048ace1fb51a502bb04d21acd",
       context: context,
-      amount: 10000, // ₦10,000
-      email: AppConstants.currentUser.email ?? '',
-      reference: reference,
-
-      onSuccess: () async {
-        await SubscriptionService.activateSubscription(
-          AppConstants.currentUser.id ?? '',
-          reference,
-        );
-
-        if (!mounted) return;
-
-        setState(() => _loading = false);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Subscription activated successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        Navigator.pop(context);
-      },
+      currency: 'NGN',
+      customerEmail: AppConstants.currentUser.email ?? '',
+      amount: (amount * 100).toString(), // kobo
+      reference: ref,
+      callBackUrl: "",
 
       onClosed: () {
         if (!mounted) return;
+        setState(() => _loading = false);
+        _showError('Payment cancelled');
+      },
 
+      onSuccess: () async {
+        // 1️⃣ Activate subscription
+        await SubscriptionService.activateSubscription(
+          AppConstants.currentUser.id ?? '',
+          ref,
+        );
+
+        if (!mounted) return;
         setState(() => _loading = false);
 
-        _showError('Payment cancelled');
+        // 2️⃣ Navigate to success screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SubscriptionSuccessScreen(
+              onDone: () {
+                // 3️⃣ Go to founder dashboard
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/founderDashboard',
+                  (route) => false,
+                );
+              },
+            ),
+          ),
+        );
       },
     );
   }

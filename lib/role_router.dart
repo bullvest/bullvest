@@ -9,11 +9,11 @@ class RoleRouter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
           .collection('users')
           .doc(AppConstants.currentUser.id)
-          .get(),
+          .snapshots(), // 👈 LISTEN, don’t fetch once
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Scaffold(
