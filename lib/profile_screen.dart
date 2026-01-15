@@ -40,11 +40,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       );
 
-      startupDetails = portfolioSnapshots
-          .where((doc) => doc.exists)
-          .map((doc) => doc.data() ?? {})
-          .cast<Map<String, dynamic>>()
-          .toList();
+      startupDetails = portfolioSnapshots.where((doc) => doc.exists).map((doc) {
+        final data = doc.data() ?? {};
+        return {
+          'id': doc.id, // Add the document ID here
+          ...data, // Spread the rest of the data
+        };
+      }).toList();
     }
 
     _isFounder = userData['type'] == 'founder';
@@ -229,18 +231,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Edit profile button
   Widget _editProfileButton(Map<String, dynamic> userData) {
-    return ElevatedButton(
-      onPressed: () async {
-        setState(() {
-          _isEditingProfile = true;
-        });
-        await _editProfile(userData);
-        setState(() {
-          _isEditingProfile = false;
-        });
-      },
-      style: ElevatedButton.styleFrom(backgroundColor: Colors.tealAccent),
-      child: const Text('Edit Profile'),
+    return Center(
+      child: ElevatedButton(
+          onPressed: () async {
+            setState(() {
+              _isEditingProfile = true;
+            });
+            await _editProfile(userData);
+            setState(() {
+              _isEditingProfile = false;
+            });
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.tealAccent),
+          child: const Text(
+            'Edit Profile',
+            style: TextStyle(color: Colors.black),
+          )),
     );
   }
 
