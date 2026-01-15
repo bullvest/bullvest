@@ -5,7 +5,7 @@ import 'package:bullvest/services/paystack_service.dart';
 import 'subscription_service.dart';
 import 'package:bullvest/view_model/user_view_model.dart';
 import 'package:bullvest/founder/subscription_success.dart';
-import 'package:flutter_paystack_plus/flutter_paystack_plus.dart';
+import 'package:pay_with_paystack/pay_with_paystack.dart';
 
 class SubscribeScreen extends StatefulWidget {
   const SubscribeScreen({Key? key}) : super(key: key);
@@ -24,40 +24,39 @@ class _SubscribeScreenState extends State<SubscribeScreen> {
     const amount = 10000;
 
     try {
-      await FlutterPaystackPlus.openPaystackPopup(
-        publicKey: "pk_test_ffbb61e55a4ad2c3b47ee2861998286a80b9b3e0",
-        secretKey: "sk_test_92972a84b747f18048ace1fb51a502bb04d21acd",
-        context: context,
-        currency: 'NGN',
-        customerEmail: AppConstants.currentUser.email ?? '',
-        amount: (amount * 100).toString(),
-        reference: ref,
-        onClosed: () {
-          if (!mounted) return;
-          setState(() => _loading = false);
-          _showError('Payment cancelled');
-        },
-        onSuccess: () async {
-          if (!mounted) return;
+      PayWithPayStack().now(
+          context: context,
+          secretKey: "sk_test_92972a84b747f18048ace1fb51a502bb04d21acd",
+          customerEmail: AppConstants.currentUser.email ?? '',
+          reference: ref,
+          currency: "NGN",
+          amount: amount * 100,
+          callbackUrl: "https://google.com",
+          transactionCompleted: (paymentData) async {
+            if (!mounted) return;
 
-          setState(() => _loading = false);
+            setState(() => _loading = false);
 
-          // 1️⃣ Activate subscription
-          await SubscriptionService.activateSubscription(
-            AppConstants.currentUser.id!,
-            ref,
-          );
+            // 1️⃣ Activate subscription
+            await SubscriptionService.activateSubscription(
+              AppConstants.currentUser.id!,
+              ref,
+            );
 
-          // 2️⃣ Navigate safely using root navigator
-          if (!mounted) return;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const SubscriptionSuccessScreen(),
-            ),
-          );
-        },
-      );
+            // 2️⃣ Navigate safely using root navigator
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const SubscriptionSuccessScreen(),
+              ),
+            );
+          },
+          transactionNotCompleted: (reason) {
+            if (!mounted) return;
+            setState(() => _loading = false);
+            _showError('Payment cancelled');
+          });
     } catch (e) {
       setState(() => _loading = false);
       _showError("Payment failed: $e");

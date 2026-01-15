@@ -40,11 +40,8 @@ class SubscriptionSuccessScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      'FounderDashboard', // match your route name exactly
-                      (route) => false,
-                    );
+                    Navigator.of(context, rootNavigator: true)
+                        .popUntil((route) => route.isFirst);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.tealAccent,

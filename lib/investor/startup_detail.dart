@@ -18,6 +18,13 @@ class _StartupDetailScreenState extends State<StartupDetailScreen>
   bool _expandedDescription = false;
   late AnimationController _pulseController;
 
+  String formatCurrency(num amount) {
+    return amount.toStringAsFixed(0).replaceAllMapped(
+          RegExp(r'\B(?=(\d{3})+(?!\d))'),
+          (match) => ',',
+        );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -60,6 +67,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen>
           final data = snapshot.data!.data() as Map<String, dynamic>;
           String? dealInvestorId = data['dealInvestorId'];
           final status = data['status'] ?? 'open';
+          final fund = data['funding'];
           final canConnect = status == 'open' ||
               (status == 'deal_in_progress' &&
                   dealInvestorId == AppConstants.currentUser.id);
@@ -68,7 +76,7 @@ class _StartupDetailScreenState extends State<StartupDetailScreen>
           final infoCards = [
             {
               'label': 'Funding Needed',
-              'value': '₦${data['funding'] ?? 'N/A'}'
+              'value': '${data['currency'] ?? '₦'}${formatCurrency(fund ?? 0)}'
             },
             {'label': 'Stage', 'value': data['stage'] ?? 'N/A'},
             {'label': 'Industry', 'value': data['industry'] ?? 'N/A'},

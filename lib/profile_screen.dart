@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:bullvest/model/app_constants.dart';
 import 'package:bullvest/login_screen.dart';
+import 'package:bullvest/investor/startup_detail.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -28,7 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final userData = userDoc.data()!;
     final postingIDs = List<String>.from(userData['myPostingIDs'] ?? []);
 
-    List<String> startupNames = [];
+    List<Map<String, dynamic>> startupDetails = [];
 
     if (postingIDs.isNotEmpty) {
       final portfolioSnapshots = await Future.wait(
@@ -38,10 +39,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       );
 
-      startupNames = portfolioSnapshots
+      startupDetails = portfolioSnapshots
           .where((doc) => doc.exists)
-          .map((doc) => doc.data()?['name'] ?? 'Untitled')
-          .cast<String>()
+          .map((doc) => doc.data() ?? {})
+          .cast<Map<String, dynamic>>()
           .toList();
     }
 
@@ -49,7 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return {
       'userData': userData,
-      'startupNames': startupNames,
+      'startupDetails': startupDetails,
     };
   }
 
@@ -100,7 +101,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
 
           final userData = snapshot.data!['userData'] as Map<String, dynamic>;
-          final startupNames = snapshot.data!['startupNames'] as List<String>;
+          final startupDetails =
+              snapshot.data!['startupDetails'] as List<Map<String, dynamic>>;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -111,9 +113,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 24),
                 _roleSwitchCard(),
                 const SizedBox(height: 24),
-                _infoCard(userData, startupNames),
+                _infoCard(userData, startupDetails),
                 const SizedBox(height: 24),
-                _startupsCard(startupNames),
+                _startupsSection(startupDetails),
                 const SizedBox(height: 32),
                 _logoutButton(context),
               ],
@@ -203,7 +205,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _infoCard(Map<String, dynamic> userData, List<String> startupNames) {
+  Widget _infoCard(Map<String, dynamic> userData,
+      List<Map<String, dynamic>> startupDetails) {
     return Card(
       color: Colors.grey[900],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -214,7 +217,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildInfoRow('Mobile', userData['mobileNumber']),
             _buildInfoRow('Country', userData['country']),
             _buildInfoRow('State', userData['state']),
-            _buildInfoRow('Total Postings', startupNames.length.toString()),
+            _buildInfoRow('Total Postings', startupDetails.length.toString()),
           ],
         ),
       ),
@@ -278,42 +281,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _startupsCard(List<String> startupNames) {
-    return Card(
-      color: Colors.grey[900],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Your Startups',
-              style: TextStyle(
-                color: Colors.tealAccent,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            if (startupNames.isEmpty)
-              Text(
+  Widget _startupsSection(List<Map<String, dynamic>> startups) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Your Startups',
+          style: TextStyle(
+              color: Colors.tealAccent,
+              fontSize: 16,
+              fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        startups.isEmpty
+            ? Text(
                 'No startups posted yet.',
                 style: TextStyle(color: Colors.grey[400]),
               )
-            else
-              ...startupNames.map(
-                (name) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Text(
-                    '• $name',
-                    style: const TextStyle(color: Colors.white),
-                  ),
+            : SizedBox(
+                height: 160,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: startups.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final startup = startups[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => StartupDetailScreen(
+                              startupId: startup['id'],
+                            ),
+                          ),
+                        );
+                      },
+                      child: _startupCard(startup),
+                    );
+                  },
                 ),
               ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 
@@ -358,26 +367,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-}
 
-Widget _buildTextField(String label, TextEditingController controller) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8),
-    child: TextField(
-      controller: controller,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.tealAccent),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.grey[700]!),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.tealAccent),
-          borderRadius: BorderRadius.circular(10),
+  Widget _startupCard(Map<String, dynamic> startup) {
+    return Container(
+      width: 220,
+      decoration: BoxDecoration(
+        color: Colors.grey[850],
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            startup['name'] ?? 'Untitled',
+            style: const TextStyle(
+                color: Colors.tealAccent,
+                fontSize: 16,
+                fontWeight: FontWeight.bold),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: Text(
+              startup['description'] ?? 'No description.',
+              style: const TextStyle(color: Colors.white70),
+              maxLines: 5,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.tealAccent),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey[700]!),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.tealAccent),
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
