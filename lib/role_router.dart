@@ -13,7 +13,7 @@ class RoleRouter extends StatelessWidget {
       stream: FirebaseFirestore.instance
           .collection('users')
           .doc(AppConstants.currentUser.id)
-          .snapshots(), // 👈 LISTEN, don’t fetch once
+          .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Scaffold(
@@ -24,9 +24,10 @@ class RoleRouter extends StatelessWidget {
 
         final role = snapshot.data!['type'];
 
+        // Rebuilds properly on role change
         return role == 'founder'
-            ? const FounderBottomNav()
-            : const InvestorBottomNav();
+            ? FounderBottomNav(key: ValueKey('founder'))
+            : InvestorBottomNav(key: ValueKey('investor'));
       },
     );
   }

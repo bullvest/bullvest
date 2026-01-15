@@ -21,14 +21,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .doc(AppConstants.currentUser.id)
         .get();
 
-    if (!userDoc.exists) {
-      throw Exception("User not found");
-    }
+    if (!userDoc.exists) throw Exception("User not found");
 
     final userData = userDoc.data()!;
     final postingIDs = List<String>.from(userData['myPostingIDs'] ?? []);
 
-    List<String> startupNames = [];
+    List<Map<String, dynamic>> startups = [];
 
     if (postingIDs.isNotEmpty) {
       final portfolioSnapshots = await Future.wait(
@@ -38,10 +36,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       );
 
-      startupNames = portfolioSnapshots
+      startups = portfolioSnapshots
           .where((doc) => doc.exists)
-          .map((doc) => doc.data()?['name'] ?? 'Untitled')
-          .cast<String>()
+          .map((doc) => doc.data()!)
+          .cast<Map<String, dynamic>>()
           .toList();
     }
 
@@ -49,13 +47,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return {
       'userData': userData,
-      'startupNames': startupNames,
+      'startups': startups,
     };
   }
 
   Future<void> _updateUserRole(bool isFounder) async {
     setState(() => _isUpdatingRole = true);
-
     final newRole = isFounder ? 'founder' : 'investor';
 
     await FirebaseFirestore.instance
@@ -77,15 +74,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> _editField(String field, String currentValue) async {
+    final controller = TextEditingController(text: currentValue);
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          'Edit $field',
+          style: const TextStyle(color: Colors.tealAccent),
+        ),
+        content: TextField(
+          controller: controller,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: 'Enter $field',
+            hintStyle: TextStyle(color: Colors.grey[500]),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.tealAccent),
+            onPressed: () async {
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(AppConstants.currentUser.id)
+                  .update({field: controller.text.trim()});
+              Navigator.pop(context);
+              setState(() {});
+            },
+            child: const Text('Save', style: TextStyle(color: Colors.black)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: Colors.black,
-        elevation: 0,
-      ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _fetchUserDataWithStartups(),
         builder: (context, snapshot) {
@@ -105,7 +138,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
 
           final userData = snapshot.data!['userData'] as Map<String, dynamic>;
-          final startupNames = snapshot.data!['startupNames'] as List<String>;
+          final startups =
+              snapshot.data!['startups'] as List<Map<String, dynamic>>;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -116,9 +150,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 24),
                 _roleSwitchCard(),
                 const SizedBox(height: 24),
-                _infoCard(userData, startupNames),
+                _editableInfoCard(userData),
                 const SizedBox(height: 24),
-                _startupsCard(startupNames),
+                _startupsSection(startups),
                 const SizedBox(height: 32),
                 _logoutButton(context),
               ],
@@ -135,7 +169,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Row(
       children: [
         CircleAvatar(
-          radius: 32,
+          radius: 36,
           backgroundColor: Colors.tealAccent,
           child: Text(
             userData['firstName']?[0]?.toUpperCase() ?? '?',
@@ -147,22 +181,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${userData['firstName']} ${userData['lastName']}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${userData['firstName']} ${userData['lastName']}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            Text(
-              userData['email'] ?? '',
-              style: TextStyle(color: Colors.grey[400]),
-            ),
-          ],
+              Text(
+                userData['email'] ?? '',
+                style: TextStyle(color: Colors.grey[400]),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -174,93 +210,140 @@ class _ProfileScreenState extends State<ProfileScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Account Role',
-                  style: TextStyle(
-                    color: Colors.tealAccent,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _isFounder ? 'Founder Mode' : 'Investor Mode',
-                  style: const TextStyle(color: Colors.white70),
-                ),
-              ],
-            ),
-            _isUpdatingRole
-                ? const CircularProgressIndicator(color: Colors.tealAccent)
-                : Switch(
-                    value: _isFounder,
-                    activeColor: Colors.tealAccent,
-                    onChanged: (value) => _updateUserRole(value),
-                  ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _infoCard(Map<String, dynamic> userData, List<String> startupNames) {
-    return Card(
-      color: Colors.grey[900],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            _buildInfoRow('Mobile', userData['mobileNumber']),
-            _buildInfoRow('Country', userData['country']),
-            _buildInfoRow('State', userData['state']),
-            _buildInfoRow('Total Postings', startupNames.length.toString()),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _startupsCard(List<String> startupNames) {
-    return Card(
-      color: Colors.grey[900],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Your Startups',
+              'Account Role',
               style: TextStyle(
-                color: Colors.tealAccent,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+                  color: Colors.tealAccent,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            if (startupNames.isEmpty)
-              Text(
+            const SizedBox(height: 8),
+            Text(
+              _isFounder
+                  ? 'Founder: tap toggle to enter Investor mode'
+                  : 'Investor: tap toggle to enter Founder mode',
+              style: const TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                _isUpdatingRole
+                    ? const CircularProgressIndicator(color: Colors.tealAccent)
+                    : Switch(
+                        value: _isFounder,
+                        activeColor: Colors.tealAccent,
+                        onChanged: (value) => _updateUserRole(value),
+                      ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _editableInfoCard(Map<String, dynamic> userData) {
+    return Card(
+      color: Colors.grey[900],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _editableRow('firstName', 'First Name', userData['firstName']),
+            _editableRow('lastName', 'Last Name', userData['lastName']),
+            _editableRow('mobileNumber', 'Mobile', userData['mobileNumber']),
+            _editableRow('country', 'Country', userData['country']),
+            _editableRow('state', 'State', userData['state']),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _editableRow(String field, String label, String value) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(label, style: const TextStyle(color: Colors.tealAccent)),
+      subtitle: Text(
+        value ?? 'N/A',
+        style: const TextStyle(color: Colors.white),
+      ),
+      trailing: IconButton(
+        icon: const Icon(Icons.edit, color: Colors.tealAccent),
+        onPressed: () => _editField(field, value ?? ''),
+      ),
+    );
+  }
+
+  Widget _startupsSection(List<Map<String, dynamic>> startups) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Your Startups',
+          style: TextStyle(
+            color: Colors.tealAccent,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        startups.isEmpty
+            ? Text(
                 'No startups posted yet.',
                 style: TextStyle(color: Colors.grey[400]),
               )
-            else
-              ...startupNames.map(
-                (name) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Text(
-                    '• $name',
-                    style: const TextStyle(color: Colors.white),
-                  ),
+            : SizedBox(
+                height: 140,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: startups.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final startup = startups[index];
+                    return _startupCard(startup);
+                  },
                 ),
               ),
-          ],
-        ),
+      ],
+    );
+  }
+
+  Widget _startupCard(Map<String, dynamic> startup) {
+    return Container(
+      width: 220,
+      decoration: BoxDecoration(
+        color: Colors.grey[850],
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            startup['name'] ?? 'Untitled',
+            style: const TextStyle(
+                color: Colors.tealAccent,
+                fontSize: 16,
+                fontWeight: FontWeight.bold),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: Text(
+              startup['description'] ?? 'No description.',
+              style: const TextStyle(color: Colors.white70),
+              maxLines: 5,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -279,30 +362,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, dynamic value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.tealAccent,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            value != null && value.toString().isNotEmpty
-                ? value.toString()
-                : 'N/A',
-            style: const TextStyle(color: Colors.white),
-          ),
-        ],
       ),
     );
   }

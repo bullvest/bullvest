@@ -1,16 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; // GetX for navigation
-import 'package:firebase_auth/firebase_auth.dart'; // Firebase Authentication
-import 'package:bullvest/home_screen.dart'; // User landing screen
-import 'package:bullvest/view_model/user_view_model.dart';
+import 'package:get/get.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:typed_data';
-import 'package:bullvest/login_screen.dart';
 import 'package:bullvest/model/app_constants.dart';
-import 'package:bullvest/api/firebase_api.dart';
+import 'package:bullvest/login_screen.dart';
+import 'role_router.dart'; // Navigate according to role
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -19,193 +14,135 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
   @override
   void initState() {
     super.initState();
 
-    // Wait for a brief moment before navigating
+    // Animation: scale logo
+    _controller =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+
+    _controller.forward();
+
+    // Delay before checking auth
     Future.delayed(const Duration(seconds: 2), _checkAuthStatus);
   }
 
-  // Function to check authentication status
-  void _checkAuthStatus() async {
+  // Check Firebase auth and load user data
+  Future<void> _checkAuthStatus() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
 
       if (user != null) {
         AppConstants.currentUser.id = user.uid;
 
-        // ✅ Get user document from Firestore
         final snapshot = await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
             .get();
 
-        if (!snapshot.exists) {
-          throw Exception("User data not found in Firestore.");
-        }
+        if (!snapshot.exists) throw Exception("User not found in Firestore.");
 
-        // ✅ Extract user role
-        final String userRole = snapshot['type'] ?? 'investor';
+        // Populate user constants
+        AppConstants.currentUser.snapshot = snapshot;
+        AppConstants.currentUser.firstName = snapshot['firstName'] ?? '';
+        AppConstants.currentUser.lastName = snapshot['lastName'] ?? '';
+        AppConstants.currentUser.email = snapshot['email'] ?? '';
+        AppConstants.currentUser.type = snapshot['type'] ?? 'investor';
+        AppConstants.currentUser.country = snapshot['country'] ?? '';
+        AppConstants.currentUser.state = snapshot['state'] ?? '';
 
-        // ✅ Navigate with role
-        Get.offAll(() => HomeScreen(userRole: userRole));
-
-        // ✅ Load additional data in background
-        _loadUserData(user.uid);
+        // Redirect to RoleRouter
+        Get.offAll(() => const RoleRouter());
       } else {
         // Not logged in
         Get.offAll(() => const LoginScreen());
       }
     } catch (e, stack) {
       print("❌ SplashScreen error: $e\n$stack");
-      Get.snackbar("Error", "Something went wrong. Please try again.");
+      Get.snackbar(
+        "Error",
+        "Something went wrong. Please try again.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.black,
+        duration: const Duration(seconds: 4),
+      );
       Get.offAll(() => const LoginScreen());
     }
   }
 
-  Future<void> _loadUserData(String userId) async {
-    try {
-      // Parallel fetch Firestore and Storage image
-      final userDocFuture =
-          FirebaseFirestore.instance.collection('users').doc(userId).get();
-
-      
-
-      // Wait for Firestore + image
-      final results = await Future.wait([userDocFuture]);
-
-      DocumentSnapshot snapshot = results[0] as DocumentSnapshot;
-
-      // Populate user info
-      AppConstants.currentUser.snapshot = snapshot;
-      AppConstants.currentUser.firstName = snapshot["firstName"] ?? "";
-      AppConstants.currentUser.lastName = snapshot['lastName'] ?? "";
-      AppConstants.currentUser.email = snapshot['email'] ?? "";
-      AppConstants.currentUser.type = snapshot['type'] ?? "";
-      AppConstants.currentUser.country = snapshot['country'] ?? "";
-      AppConstants.currentUser.state = snapshot['state'] ?? "";
-
-      // Set image if fetched
-      
-
-      // Fetch posts in background without blocking
-      //  AppConstants.currentUser.getMyPostingsFromFirestore().catchError((e) {
-      //  print("❌ Error fetching postings: $e");
-      // });
-
-      // Initialize notifications & upload FCM token in background
-      FirebaseApi().initNotifications().catchError((e) {
-        print("❌ Error initializing notifications: $e");
-      });
-      FirebaseApi().uploadPendingFcmToken(userId).catchError((e) {
-        print("❌ Error uploading FCM token: $e");
-      });
-
-      //  await PostingsManager().initializeUser();
-      // await PostingsManager().initializePostings();
-
-      // Check account status
-      if (AppConstants.currentUser.status == 0) {
-        await FirebaseAuth.instance.signOut();
-        Get.snackbar(
-          "Account Suspended",
-          "Your account has been suspended. You've been logged out.",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade100,
-          colorText: Colors.black,
-          duration: Duration(seconds: 4),
-        );
-        Get.offAll(() => LoginScreen());
-      }
-    } catch (e) {
-      print("❌ Error loading user data in background: $e");
-    }
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.black,
-                Colors.black,
-              ],
-              begin: FractionalOffset(0, 0),
-              end: FractionalOffset(1, 0),
-              stops: [0, 1],
-              tileMode: TileMode.clamp,
-            ),
-          ),
-        ),
-        automaticallyImplyLeading: false,
-      ),
+      backgroundColor: Colors.black,
       body: Container(
-        decoration: BoxDecoration(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
               Colors.black,
-              Colors.black,
-              Colors.black,
+              Colors.black87,
+              Colors.black54,
             ],
-          ),
-          image: DecorationImage(
-            image: AssetImage(""), // Add your image if needed
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-                Colors.white.withOpacity(0.2), BlendMode.darken),
           ),
         ),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // TweenAnimationBuilder for zooming effect
-              TweenAnimationBuilder(
-                tween: Tween<double>(
-                    begin: 0.5,
-                    end: 1.0), // Start at 50% scale and zoom to 100%
-                duration: const Duration(seconds: 2),
-                curve: Curves.easeInOut, // Smooth zooming curve
-                builder: (context, scale, child) {
-                  return Transform.scale(
-                    scale: scale, // Apply the zoom scale
-                    child: child,
-                  );
-                },
-                child: Text(
-                  "BULLVEST",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 30,
-                    color: Colors.tealAccent,
-                  ),
-                ), // Splash logo image
-              ),
-              SizedBox(height: 5),
-              const Padding(
-                padding: EdgeInsets.only(top: 2.0),
-                child: Text(
-                  "the investor-founder marketplace", // Text on splash screen
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.normal,
-                    fontSize: 18,
-                    color: Colors.tealAccent,
+          child: FadeTransition(
+            opacity: _animation,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo
+                ScaleTransition(
+                  scale: _animation,
+                  child: Text(
+                    "BULLVEST",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 36,
+                      color: Colors.tealAccent.shade400,
+                      letterSpacing: 2,
+                    ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                // Tagline
+                const Text(
+                  "The investor-founder marketplace",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white70,
+                  ),
+                ),
+                const SizedBox(height: 30),
+                // Progress indicator
+                const CircularProgressIndicator(
+                  color: Colors.tealAccent,
+                  strokeWidth: 3,
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-//ok
