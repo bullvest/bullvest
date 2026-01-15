@@ -15,6 +15,13 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   final TextEditingController searchController = TextEditingController();
   String searchQuery = '';
 
+  String formatCurrency(num amount) {
+    return amount.toStringAsFixed(0).replaceAllMapped(
+          RegExp(r'\B(?=(\d{3})+(?!\d))'),
+          (match) => ',',
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,6 +68,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             final name = data['name'];
             final industry = data['industry'];
             final funding = data['funding'];
+            final currency = data['currency'];
             final description = data['description'];
             final status = data['status'] ?? 'open';
             final dealInvestorId = data['dealInvestorId'];
@@ -103,7 +111,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                     const SizedBox(height: 6),
                     Text('Industry: $industry',
                         style: const TextStyle(color: Colors.white70)),
-                    Text('Funding: ₦$funding',
+                    Text('Funding: $currency${formatCurrency(funding ?? 0)}',
                         style: const TextStyle(color: Colors.white70)),
                     const SizedBox(height: 8),
                     Text(description,

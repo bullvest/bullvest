@@ -17,12 +17,8 @@ class FounderDashboard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// ================= SUBSCRIPTION CARD =================
           _subscriptionCard(context),
-
           const SizedBox(height: 16),
-
-          /// ================= TITLE =================
           const Text(
             'Your Portfolio',
             style: TextStyle(
@@ -32,8 +28,6 @@ class FounderDashboard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-
-          /// ================= PORTFOLIO LIST =================
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -64,61 +58,54 @@ class FounderDashboard extends StatelessWidget {
                     final doc = docs[index];
                     final data = doc.data() as Map<String, dynamic>;
 
-                    return Card(
-                      color: Colors.grey[900],
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: ListTile(
-                        title: Text(
-                          data['name'] ?? 'No name',
-                          style: const TextStyle(
-                            color: Colors.tealAccent,
-                            fontWeight: FontWeight.w600,
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => _showStartupDetails(context, doc.id, data),
+                      child: Card(
+                        color: Colors.grey[900],
+                        margin: const EdgeInsets.only(bottom: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                data['name'] ?? 'Untitled',
+                                style: const TextStyle(
+                                  color: Colors.tealAccent,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                data['description'] ?? 'No description',
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(color: Colors.grey[300]),
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                children: [
+                                  const Icon(Icons.payments,
+                                      size: 16, color: Colors.tealAccent),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '${data['currency'] ?? '₦'}${formatCurrency(data['funding'] ?? 0)}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  _statusChip(data['status']),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 4),
-                            Text(
-                              data['description'] ?? 'No description',
-                              style: TextStyle(color: Colors.grey[400]),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Funding: ${data['funding'] ?? 'N/A'}',
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                            Text(
-                              'Status: ${data['status'] ?? 'N/A'}',
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: PopupMenuButton<String>(
-                          color: Colors.grey[800],
-                          onSelected: (value) {
-                            if (value == 'edit') {
-                              _showEditDialog(context, doc.id, data);
-                            } else if (value == 'delete') {
-                              _confirmDelete(context, doc.id);
-                            }
-                          },
-                          itemBuilder: (_) => const [
-                            PopupMenuItem(
-                              value: 'edit',
-                              child: Text('Edit'),
-                            ),
-                            PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Delete'),
-                            ),
-                          ],
                         ),
                       ),
                     );
@@ -127,11 +114,19 @@ class FounderDashboard extends StatelessWidget {
               },
             ),
           ),
-
-          /// ================= POST BUTTON =================
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
+              icon: const Icon(Icons.add),
+              label: const Text('Post Your Startup'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.tealAccent,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               onPressed: () async {
                 final userDoc = await FirebaseFirestore.instance
                     .collection('users')
@@ -159,22 +154,8 @@ class FounderDashboard extends StatelessWidget {
                   ),
                 );
               },
-              icon: const Icon(Icons.add),
-              label: const Text('Post Your Startup'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.tealAccent,
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                textStyle:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
             ),
           ),
-
-          const SizedBox(height: 12),
         ],
       ),
     );
@@ -191,9 +172,7 @@ class FounderDashboard extends StatelessWidget {
           .doc(userId)
           .snapshots(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const SizedBox();
-        }
+        if (!snapshot.hasData) return const SizedBox();
 
         final data = snapshot.data!.data() as Map<String, dynamic>?;
         final subscription = data?['subscription'];
@@ -202,11 +181,10 @@ class FounderDashboard extends StatelessWidget {
             SubscriptionService.isSubscriptionActive(subscription);
 
         int daysRemaining = 0;
-
-        if (subscription != null && subscription['expiresAt'] != null) {
-          final expiry = (subscription['expiresAt'] as Timestamp).toDate();
-          daysRemaining = expiry.difference(DateTime.now()).inDays;
-          if (daysRemaining < 0) daysRemaining = 0;
+        if (subscription?['expiresAt'] != null) {
+          final expiry = (subscription!['expiresAt'] as Timestamp).toDate();
+          daysRemaining =
+              expiry.difference(DateTime.now()).inDays.clamp(0, 999);
         }
 
         return Card(
@@ -220,7 +198,6 @@ class FounderDashboard extends StatelessWidget {
                 Icon(
                   isActive ? Icons.verified : Icons.lock,
                   color: Colors.white,
-                  size: 28,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -232,10 +209,7 @@ class FounderDashboard extends StatelessWidget {
                             ? 'Subscription Active'
                             : 'Subscription Required',
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -248,21 +222,18 @@ class FounderDashboard extends StatelessWidget {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const SubscribeScreen(),
-                      ),
-                    );
-                    // Auto-refresh happens automatically
-                    // because this card uses StreamBuilder
-                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
                         isActive ? Colors.white : Colors.tealAccent,
                     foregroundColor: Colors.black,
                   ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const SubscribeScreen()),
+                    );
+                  },
                   child: Text(isActive ? 'Manage' : 'Subscribe'),
                 ),
               ],
@@ -273,100 +244,109 @@ class FounderDashboard extends StatelessWidget {
     );
   }
 
-  // ================= EDIT =================
+  // ================= DETAILS & LOCK =================
 
-  void _showEditDialog(
+  void _showStartupDetails(
       BuildContext context, String docId, Map<String, dynamic> data) {
-    final nameController = TextEditingController(text: data['name']);
-    final descriptionController =
-        TextEditingController(text: data['description']);
+    final bool locked = data['status'] != 'open';
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        title:
-            const Text('Edit Startup', style: TextStyle(color: Colors.white)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _field('Name', nameController),
-            _field('Description', descriptionController, maxLines: 3),
-          ],
+      isScrollControlled: true,
+      backgroundColor: Colors.grey[900],
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                data['name'] ?? '',
+                style: const TextStyle(
+                  color: Colors.tealAccent,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _detailRow('Industry', data['industry']),
+              _detailRow('Stage', data['stage']),
+              _detailRow(
+                'Funding',
+                '${data['currency'] ?? '₦'}${formatCurrency(data['funding'] ?? 0)}',
+              ),
+              _detailRow('Location', data['location']),
+              const SizedBox(height: 12),
+              const Text(
+                'Description',
+                style: TextStyle(
+                    color: Colors.tealAccent, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              Text(data['description'] ?? '',
+                  style: const TextStyle(color: Colors.white)),
+              const SizedBox(height: 20),
+              if (locked)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red[900],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'This startup is in an active deal.\n'
+                    'Editing and deletion are locked.\n\n'
+                    'Please contact admin.',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await FirebaseFirestore.instance
-                  .collection('portfolio')
-                  .doc(docId)
-                  .update({
-                'name': nameController.text,
-                'description': descriptionController.text,
-              });
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.tealAccent),
-            child: const Text('Save', style: TextStyle(color: Colors.black)),
-          ),
-        ],
       ),
     );
   }
+}
 
-  Widget _field(String label, TextEditingController controller,
-      {int maxLines = 1}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextField(
-        controller: controller,
-        maxLines: maxLines,
-        style: const TextStyle(color: Colors.white),
-        decoration: const InputDecoration(
-          labelStyle: TextStyle(color: Colors.tealAccent),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.tealAccent),
-          ),
+// ================= HELPERS =================
+
+Widget _statusChip(String? status) {
+  final locked = status == 'deal_in_progress';
+
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    decoration: BoxDecoration(
+      color: locked ? Colors.orange[800] : Colors.green[800],
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(
+      status?.replaceAll('_', ' ').toUpperCase() ?? 'OPEN',
+      style: const TextStyle(
+          color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+    ),
+  );
+}
+
+Widget _detailRow(String label, String? value) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 6),
+    child: Row(
+      children: [
+        Text('$label: ', style: TextStyle(color: Colors.grey[400])),
+        Expanded(
+          child:
+              Text(value ?? 'N/A', style: const TextStyle(color: Colors.white)),
         ),
-      ),
-    );
-  }
+      ],
+    ),
+  );
+}
 
-  // ================= DELETE =================
-
-  void _confirmDelete(BuildContext context, String docId) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        title:
-            const Text('Delete Startup', style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'Are you sure you want to delete this startup?',
-          style: TextStyle(color: Colors.grey),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await FirebaseFirestore.instance
-                  .collection('portfolio')
-                  .doc(docId)
-                  .delete();
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
+String formatCurrency(num amount) {
+  return amount
+      .toStringAsFixed(0)
+      .replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => ',');
 }

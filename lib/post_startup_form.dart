@@ -25,6 +25,7 @@ class _PostStartupFormState extends State<PostStartupForm> {
   final TextEditingController _teamSizeController = TextEditingController();
   final TextEditingController _marketController = TextEditingController();
 
+  String _selectedCurrency = '₦'; // ✅ Currency dropdown
   bool _isLoading = false;
 
   Future<void> _submitForm() async {
@@ -33,14 +34,22 @@ class _PostStartupFormState extends State<PostStartupForm> {
     setState(() => _isLoading = true);
 
     try {
-      // 1️⃣ Add startup to 'portfolio'
+      final fundingAmount =
+          int.tryParse(_fundingController.text.replaceAll(',', ''));
+
+      if (fundingAmount == null) {
+        throw 'Invalid funding amount';
+      }
+
+      // 1️⃣ Add startup to portfolio
       final docRef =
           await FirebaseFirestore.instance.collection('portfolio').add({
         'uid': AppConstants.currentUser.id,
         'name': _nameController.text.trim(),
         'industry': _industryController.text.trim(),
         'stage': _stageController.text.trim(),
-        'funding': _fundingController.text.trim(),
+        'funding': fundingAmount, // ✅ numeric
+        'currency': _selectedCurrency, // ✅ saved
         'description': _descriptionController.text.trim(),
         'problem': _problemController.text.trim(),
         'solution': _solutionController.text.trim(),
@@ -49,20 +58,17 @@ class _PostStartupFormState extends State<PostStartupForm> {
         'teamSize': _teamSizeController.text.trim(),
         'targetMarket': _marketController.text.trim(),
         'createdAt': FieldValue.serverTimestamp(),
-        'status': 'open', // Default status
+        'status': 'open', // ✅ default status
       });
 
-      final newStartupId = docRef.id;
-
-      // 2️⃣ Update user's posted startups
+      // 2️⃣ Track posting under user
       await FirebaseFirestore.instance
           .collection('users')
           .doc(AppConstants.currentUser.id)
           .update({
-        'myPostingIDs': FieldValue.arrayUnion([newStartupId])
+        'myPostingIDs': FieldValue.arrayUnion([docRef.id])
       });
 
-      // 3️⃣ Success feedback
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Startup posted successfully!'),
@@ -70,10 +76,9 @@ class _PostStartupFormState extends State<PostStartupForm> {
         ),
       );
 
-      // 4️⃣ Clear form
       _formKey.currentState!.reset();
+      setState(() => _selectedCurrency = '₦');
 
-      // 5️⃣ Redirect back after short delay
       Future.delayed(const Duration(seconds: 1), () {
         Navigator.pop(context);
       });
@@ -90,33 +95,63 @@ class _PostStartupFormState extends State<PostStartupForm> {
     }
   }
 
-  Widget _buildTextField(TextEditingController controller, String label,
-      {int maxLines = 1, String? hintText}) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    int maxLines = 1,
+    String? hintText,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
     return TextFormField(
       controller: controller,
-      style: const TextStyle(color: Colors.white),
       maxLines: maxLines,
+      keyboardType: keyboardType,
+      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,
         labelStyle: const TextStyle(color: Colors.tealAccent),
         hintStyle: const TextStyle(color: Colors.grey),
         enabledBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.tealAccent)),
+          borderSide: BorderSide(color: Colors.tealAccent),
+        ),
       ),
       validator: (value) =>
           value == null || value.isEmpty ? 'Please enter $label' : null,
     );
   }
 
+  Widget _currencyDropdown() {
+    return DropdownButtonFormField<String>(
+      value: _selectedCurrency,
+      dropdownColor: Colors.grey[900],
+      decoration: const InputDecoration(
+        labelText: 'Currency',
+        labelStyle: TextStyle(color: Colors.tealAccent),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.tealAccent),
+        ),
+      ),
+      items: const [
+        DropdownMenuItem(value: '₦', child: Text('₦ Nigerian Naira')),
+        DropdownMenuItem(value: '\$', child: Text('\$ US Dollar')),
+        DropdownMenuItem(value: '€', child: Text('€ Euro')),
+        DropdownMenuItem(value: '£', child: Text('£ British Pound')),
+      ],
+      onChanged: (value) {
+        setState(() => _selectedCurrency = value!);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('Post Your Startup'),
         backgroundColor: Colors.black,
       ),
-      backgroundColor: Colors.black,
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -128,30 +163,52 @@ class _PostStartupFormState extends State<PostStartupForm> {
               _buildTextField(_industryController, 'Industry / Sector'),
               const SizedBox(height: 12),
               _buildTextField(
-                  _stageController, 'Stage (Idea, MVP, Seed, Growth)'),
+                _stageController,
+                'Stage (Idea, MVP, Seed, Growth)',
+              ),
+              const SizedBox(height: 12),
+              _currencyDropdown(),
               const SizedBox(height: 12),
               _buildTextField(
-                  _fundingController, 'Funding Needed (e.g., \$100k)'),
+                _fundingController,
+                'Funding Needed',
+                keyboardType: TextInputType.number,
+                hintText: 'e.g. 100000',
+              ),
               const SizedBox(height: 12),
               _buildTextField(_teamSizeController, 'Team Size'),
               const SizedBox(height: 12),
-              _buildTextField(_marketController, 'Target Market / Customers'),
-              const SizedBox(height: 12),
-              _buildTextField(_problemController, 'Problem Statement',
-                  maxLines: 3),
+              _buildTextField(_marketController, 'Target Market'),
               const SizedBox(height: 12),
               _buildTextField(
-                  _solutionController, 'Solution / Value Proposition',
-                  maxLines: 3),
+                _problemController,
+                'Problem Statement',
+                maxLines: 3,
+              ),
               const SizedBox(height: 12),
-              _buildTextField(_descriptionController, 'Brief Description',
-                  maxLines: 4),
+              _buildTextField(
+                _solutionController,
+                'Solution / Value Proposition',
+                maxLines: 3,
+              ),
               const SizedBox(height: 12),
-              _buildTextField(_pitchDeckController, 'Pitch Deck URL',
-                  hintText: 'Link to PDF or Google Drive'),
+              _buildTextField(
+                _descriptionController,
+                'Brief Description',
+                maxLines: 4,
+              ),
               const SizedBox(height: 12),
-              _buildTextField(_websiteController, 'Website / Social Links',
-                  hintText: 'Optional'),
+              _buildTextField(
+                _pitchDeckController,
+                'Pitch Deck URL',
+                hintText: 'Google Drive / PDF link',
+              ),
+              const SizedBox(height: 12),
+              _buildTextField(
+                _websiteController,
+                'Website / Social Link',
+                hintText: 'Optional',
+              ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _isLoading ? null : _submitForm,
