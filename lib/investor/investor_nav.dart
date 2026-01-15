@@ -28,6 +28,11 @@ class _InvestorBottomNavState extends State<InvestorBottomNav> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(titles[_index]),
+        backgroundColor: Colors.black,
+        elevation: 0,
+      ),
       body: pages[_index],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.black,

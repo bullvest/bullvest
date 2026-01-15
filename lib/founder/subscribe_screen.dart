@@ -17,46 +17,51 @@ class SubscribeScreen extends StatefulWidget {
 class _SubscribeScreenState extends State<SubscribeScreen> {
   bool _loading = false;
 
-  void _subscribe() {
+  void _subscribe() async {
     setState(() => _loading = true);
 
     final ref = DateTime.now().millisecondsSinceEpoch.toString();
     const amount = 10000;
 
-    FlutterPaystackPlus.openPaystackPopup(
-      publicKey: "pk_test_ffbb61e55a4ad2c3b47ee2861998286a80b9b3e0",
-      secretKey: "sk_test_92972a84b747f18048ace1fb51a502bb04d21acd",
-      context: context,
-      currency: 'NGN',
-      customerEmail: AppConstants.currentUser.email ?? '',
-      amount: (amount * 100).toString(),
-      reference: ref,
-      onClosed: () {
-        if (!mounted) return;
-        setState(() => _loading = false);
-        _showError('Payment cancelled');
-      },
-      onSuccess: () async {
-        // 1️⃣ Activate subscription
-        await SubscriptionService.activateSubscription(
-          AppConstants.currentUser.id!,
-          ref,
-        );
+    try {
+      await FlutterPaystackPlus.openPaystackPopup(
+        publicKey: "pk_test_ffbb61e55a4ad2c3b47ee2861998286a80b9b3e0",
+        secretKey: "sk_test_92972a84b747f18048ace1fb51a502bb04d21acd",
+        context: context,
+        currency: 'NGN',
+        customerEmail: AppConstants.currentUser.email ?? '',
+        amount: (amount * 100).toString(),
+        reference: ref,
+        onClosed: () {
+          if (!mounted) return;
+          setState(() => _loading = false);
+          _showError('Payment cancelled');
+        },
+        onSuccess: () async {
+          if (!mounted) return;
 
-        if (!mounted) return;
-        setState(() => _loading = false);
+          setState(() => _loading = false);
 
-        // 2️⃣ Wait one frame, then navigate using ROOT navigator
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+          // 1️⃣ Activate subscription
+          await SubscriptionService.activateSubscription(
+            AppConstants.currentUser.id!,
+            ref,
+          );
+
+          // 2️⃣ Navigate safely using root navigator
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
             MaterialPageRoute(
               builder: (_) => const SubscriptionSuccessScreen(),
             ),
-            (route) => false,
           );
-        });
-      },
-    );
+        },
+      );
+    } catch (e) {
+      setState(() => _loading = false);
+      _showError("Payment failed: $e");
+    }
   }
 
   void _showError(String message) {

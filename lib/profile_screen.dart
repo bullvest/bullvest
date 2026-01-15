@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:bullvest/model/app_constants.dart';
 import 'package:bullvest/login_screen.dart';
-import 'package:bullvest/investor/startup_detail.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -22,12 +21,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .doc(AppConstants.currentUser.id)
         .get();
 
-    if (!userDoc.exists) throw Exception("User not found");
+    if (!userDoc.exists) {
+      throw Exception("User not found");
+    }
 
     final userData = userDoc.data()!;
     final postingIDs = List<String>.from(userData['myPostingIDs'] ?? []);
 
-    List<Map<String, dynamic>> startups = [];
+    List<String> startupNames = [];
 
     if (postingIDs.isNotEmpty) {
       final portfolioSnapshots = await Future.wait(
@@ -37,10 +38,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       );
 
-      startups = portfolioSnapshots
+      startupNames = portfolioSnapshots
           .where((doc) => doc.exists)
-          .map((doc) => doc.data()!)
-          .cast<Map<String, dynamic>>()
+          .map((doc) => doc.data()?['name'] ?? 'Untitled')
+          .cast<String>()
           .toList();
     }
 
@@ -48,12 +49,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return {
       'userData': userData,
-      'startups': startups,
+      'startupNames': startupNames,
     };
   }
 
   Future<void> _updateUserRole(bool isFounder) async {
     setState(() => _isUpdatingRole = true);
+
     final newRole = isFounder ? 'founder' : 'investor';
 
     await FirebaseFirestore.instance
@@ -72,6 +74,150 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _fetchUserDataWithStartups(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.tealAccent),
+            );
+          }
+
+          if (snapshot.hasError || !snapshot.hasData) {
+            return const Center(
+              child: Text(
+                'Failed to load profile data.',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+            );
+          }
+
+          final userData = snapshot.data!['userData'] as Map<String, dynamic>;
+          final startupNames = snapshot.data!['startupNames'] as List<String>;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _profileHeader(userData),
+                const SizedBox(height: 24),
+                _roleSwitchCard(),
+                const SizedBox(height: 24),
+                _infoCard(userData, startupNames),
+                const SizedBox(height: 24),
+                _startupsCard(startupNames),
+                const SizedBox(height: 32),
+                _logoutButton(context),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ===================== UI COMPONENTS =====================
+
+  Widget _profileHeader(Map<String, dynamic> userData) {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 32,
+          backgroundColor: Colors.tealAccent,
+          child: Text(
+            userData['firstName']?[0]?.toUpperCase() ?? '?',
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${userData['firstName']} ${userData['lastName']}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              userData['email'] ?? '',
+              style: TextStyle(color: Colors.grey[400]),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _roleSwitchCard() {
+    return Card(
+      color: Colors.grey[900],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Account Role',
+                  style: TextStyle(
+                    color: Colors.tealAccent,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _isFounder ? 'Founder Mode' : 'Investor Mode',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
+            _isUpdatingRole
+                ? const CircularProgressIndicator(color: Colors.tealAccent)
+                : Switch(
+                    value: _isFounder,
+                    activeColor: Colors.tealAccent,
+                    onChanged: (value) => _updateUserRole(value),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _infoCard(Map<String, dynamic> userData, List<String> startupNames) {
+    return Card(
+      color: Colors.grey[900],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            _buildInfoRow('Mobile', userData['mobileNumber']),
+            _buildInfoRow('Country', userData['country']),
+            _buildInfoRow('State', userData['state']),
+            _buildInfoRow('Total Postings', startupNames.length.toString()),
+          ],
+        ),
+      ),
     );
   }
 
@@ -132,279 +278,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TextField(
-        controller: controller,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(color: Colors.tealAccent),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey[700]!),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.tealAccent),
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _fetchUserDataWithStartups(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: Colors.tealAccent),
-            );
-          }
-
-          if (snapshot.hasError || !snapshot.hasData) {
-            return const Center(
-              child: Text(
-                'Failed to load profile data.',
-                style: TextStyle(color: Colors.redAccent),
-              ),
-            );
-          }
-
-          final userData = snapshot.data!['userData'] as Map<String, dynamic>;
-          final startups =
-              snapshot.data!['startups'] as List<Map<String, dynamic>>;
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _profileHeader(userData),
-                const SizedBox(height: 20),
-                _roleSwitchCard(),
-                const SizedBox(height: 20),
-                Center(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _editProfile(userData),
-                    icon: const Icon(Icons.edit),
-                    label: const Text('Edit Profile'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.tealAccent,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 28, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30)),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                _isFounder
-                    ? _startupsSection(startups)
-                    : _investorPortfolioSection(startups),
-                const SizedBox(height: 32),
-                _logoutButton(context),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _profileHeader(Map<String, dynamic> userData) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 36,
-          backgroundColor: Colors.tealAccent,
-          child: Text(
-            userData['firstName']?[0]?.toUpperCase() ?? '?',
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${userData['firstName']} ${userData['lastName']}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                userData['email'] ?? '',
-                style: TextStyle(color: Colors.grey[400]),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _roleSwitchCard() {
+  Widget _startupsCard(List<String> startupNames) {
     return Card(
       color: Colors.grey[900],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Account Role',
+              'Your Startups',
               style: TextStyle(
-                  color: Colors.tealAccent,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold),
+                color: Colors.tealAccent,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              _isFounder ? 'Founder' : 'Investor',
-              style: const TextStyle(color: Colors.white70, fontSize: 15),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                _isUpdatingRole
-                    ? const CircularProgressIndicator(color: Colors.tealAccent)
-                    : Switch(
-                        value: _isFounder,
-                        activeColor: Colors.tealAccent,
-                        onChanged: (value) => _updateUserRole(value),
-                      ),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _startupsSection(List<Map<String, dynamic>> startups) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Your Startups',
-          style: TextStyle(
-              color: Colors.tealAccent,
-              fontSize: 16,
-              fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        startups.isEmpty
-            ? Text(
+            const SizedBox(height: 12),
+            if (startupNames.isEmpty)
+              Text(
                 'No startups posted yet.',
                 style: TextStyle(color: Colors.grey[400]),
               )
-            : SizedBox(
-                height: 160,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: startups.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) {
-                    final startup = startups[index];
-                    return _startupCard(startup);
-                  },
+            else
+              ...startupNames.map(
+                (name) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(
+                    '• $name',
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
-      ],
-    );
-  }
-
-  Widget _investorPortfolioSection(List<Map<String, dynamic>> startups) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Invested Startups',
-          style: TextStyle(
-              color: Colors.tealAccent,
-              fontSize: 16,
-              fontWeight: FontWeight.bold),
+          ],
         ),
-        const SizedBox(height: 12),
-        startups.isEmpty
-            ? Text(
-                'No startups invested yet.',
-                style: TextStyle(color: Colors.grey[400]),
-              )
-            : SizedBox(
-                height: 160,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: startups.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) {
-                    final startup = startups[index];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => StartupDetailScreen(
-                              startupId: startup['id'],
-                            ),
-                          ),
-                        );
-                      },
-                      child: _startupCard(startup),
-                    );
-                  },
-                ),
-              ),
-      ],
-    );
-  }
-
-  Widget _startupCard(Map<String, dynamic> startup) {
-    return Container(
-      width: 220,
-      decoration: BoxDecoration(
-        color: Colors.grey[850],
-        borderRadius: BorderRadius.circular(16),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            startup['name'] ?? 'Untitled',
-            style: const TextStyle(
-                color: Colors.tealAccent,
-                fontSize: 16,
-                fontWeight: FontWeight.bold),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: Text(
-              startup['description'] ?? 'No description.',
-              style: const TextStyle(color: Colors.white70),
-              maxLines: 5,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -426,4 +334,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+
+  Widget _buildInfoRow(String label, dynamic value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.tealAccent,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            value != null && value.toString().isNotEmpty
+                ? value.toString()
+                : 'N/A',
+            style: const TextStyle(color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Widget _buildTextField(String label, TextEditingController controller) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: TextField(
+      controller: controller,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.tealAccent),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey[700]!),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: const BorderSide(color: Colors.tealAccent),
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    ),
+  );
 }

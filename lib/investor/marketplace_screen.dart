@@ -120,12 +120,15 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () =>
-                            StartupDetailScreen(startupId: startupId),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _statusColor(status),
-                          foregroundColor: Colors.black,
-                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  StartupDetailScreen(startupId: startupId),
+                            ),
+                          );
+                        },
                         child: Text('connect'),
                       ),
                     )
