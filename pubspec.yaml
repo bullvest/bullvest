@@ -21,7 +21,8 @@ dependencies:
   uuid:
   firebase_messaging:
   flutter_local_notifications:
-  permission_handler: 
+  permission_handler:
+  flutter_paystack:
 
 dev_dependencies:
   flutter_test:

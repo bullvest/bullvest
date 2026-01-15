@@ -33,15 +33,24 @@ class UserModel extends ContactModel {
     this.type = "",
     this.country = "",
     this.state = "",
-  }) : super(
-            id: id,
-            firstName: firstName,
-            lastName: lastName) {
+  }) : super(id: id, firstName: firstName, lastName: lastName) {
     isHost = false;
     isCurrentlyHosting = false;
 
     //  savedPostings = [];
     //  myPostings = [];
+  }
+  factory UserModel.fromMap(Map<String, dynamic> map, String id) {
+    return UserModel(
+      id: id,
+      firstName: map['firstName'] ?? '',
+      lastName: map['lastName'] ?? '',
+      email: map['email'] ?? '',
+      type: map['type'] ?? 'investor',
+      mobileNumber: map['mobileNumber'] ?? '',
+      country: map['country'] ?? '',
+      state: map['state'] ?? '',
+    );
   }
 
   createContactFromUser() {
