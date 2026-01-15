@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 
 class SubscriptionSuccessScreen extends StatelessWidget {
-  final VoidCallback onDone;
-
   const SubscriptionSuccessScreen({
     Key? key,
-    required this.onDone,
   }) : super(key: key);
 
   @override
@@ -42,7 +39,13 @@ class SubscriptionSuccessScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: onDone,
+                  onPressed: () {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      'FounderDashboard', // match your route name exactly
+                      (route) => false,
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.tealAccent,
                     foregroundColor: Colors.black,
