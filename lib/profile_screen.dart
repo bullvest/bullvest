@@ -158,37 +158,84 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ===================== UI COMPONENTS =====================
 
   Widget _profileHeader(Map<String, dynamic> userData) {
-    return Row(
+    return Stack(
       children: [
-        CircleAvatar(
-          radius: 32,
-          backgroundColor: Colors.tealAccent,
-          child: Text(
-            userData['firstName']?[0]?.toUpperCase() ?? '?',
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        // Main content of the profile header
+        Row(
           children: [
-            Text(
-              '${userData['firstName']} ${userData['lastName']}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            CircleAvatar(
+              radius: 32,
+              backgroundColor: Colors.tealAccent,
+              child: Text(
+                userData['firstName']?[0]?.toUpperCase() ?? '?',
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
             ),
-            Text(
-              userData['email'] ?? '',
-              style: TextStyle(color: Colors.grey[400]),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${userData['firstName']} ${userData['lastName']}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  userData['email'] ?? '',
+                  style: TextStyle(color: Colors.grey[400]),
+                ),
+              ],
             ),
           ],
+        ),
+
+        // Positioned Edit button at the top-right corner
+        Positioned(
+          right: 0,
+          top: 0,
+          child: GestureDetector(
+            onTap: () async {
+              setState(() {
+                _isEditingProfile = true;
+              });
+              await _editProfile(userData);
+              setState(() {
+                _isEditingProfile = false;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black, // Black background for the button
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.tealAccent, width: 2),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.edit,
+                    color: Colors.tealAccent,
+                    size: 20,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Edit',
+                    style: TextStyle(
+                      color: Colors.tealAccent,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -241,67 +288,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Stack(
-          children: [
+        child:
             // Card content (Info Rows)
             Column(
-              children: [
-                _buildInfoRow('Mobile', userData['mobileNumber']),
-                _buildInfoRow('Country', userData['country']),
-                _buildInfoRow('State', userData['state']),
-                _buildInfoRow(
-                    'Total Postings', startupDetails.length.toString()),
-              ],
-            ),
-            // Positioned Edit button at the top-right corner
-            Positioned(
-              top: 8,
-              right: 8,
-              child: GestureDetector(
-                onTap: () async {
-                  setState(() {
-                    _isEditingProfile = true;
-                  });
-                  await _editProfile(userData);
-                  setState(() {
-                    _isEditingProfile = false;
-                  });
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.black, // Black background for the button
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.tealAccent, width: 2),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.edit,
-                        color: Colors.tealAccent,
-                        size: 20,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Edit',
-                        style: TextStyle(
-                          color: Colors.tealAccent,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          children: [
+            _buildInfoRow('Mobile', userData['mobileNumber']),
+            _buildInfoRow('Country', userData['country']),
+            _buildInfoRow('State', userData['state']),
+            _buildInfoRow('Total Postings', startupDetails.length.toString()),
           ],
         ),
+        // Positioned Edit button at the top-right corner
       ),
     );
   }
-
-  
 
   Future<void> _editProfile(Map<String, dynamic> userData) async {
     final firstNameController =

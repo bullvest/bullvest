@@ -29,6 +29,7 @@ class _AllChatsScreenState extends State<AllChatsScreen> {
                   child: CircularProgressIndicator(color: Colors.tealAccent));
             }
 
+            // Handle no chats or empty data
             if (!chatSnapshot.hasData || chatSnapshot.data!.docs.isEmpty) {
               return const Center(
                   child: Text('No chats yet',
@@ -44,7 +45,13 @@ class _AllChatsScreenState extends State<AllChatsScreen> {
                 final chatDoc = chats[index];
                 final chatData = chatDoc.data() as Map<String, dynamic>?;
 
-                if (chatData == null) return const SizedBox();
+                // If chatData is null or doesn't have necessary fields, skip this chat
+                if (chatData == null ||
+                    !chatData.containsKey('participants') ||
+                    !chatData.containsKey('startupId') ||
+                    !chatData.containsKey('dealStatus')) {
+                  return const SizedBox();
+                }
 
                 final participants =
                     List<String>.from(chatData['participants'] ?? []);
