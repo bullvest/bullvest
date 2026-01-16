@@ -26,7 +26,51 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: _buildStartupList(),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: _buildSearchBar(),
+            ),
+            Expanded(
+              child:
+                  _buildStartupList(), // Expanded fixes scrolling & alignment
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return TextField(
+      controller: searchController,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: 'Search startups by name, industry, or description',
+        hintStyle: const TextStyle(color: Colors.grey),
+        prefixIcon: const Icon(Icons.search, color: Colors.tealAccent),
+        suffixIcon: searchQuery.isNotEmpty
+            ? GestureDetector(
+                onTap: () {
+                  searchController.clear();
+                  setState(() => searchQuery = '');
+                },
+                child: const Icon(Icons.clear, color: Colors.redAccent),
+              )
+            : null,
+        filled: true,
+        fillColor: Colors.grey[900],
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      onChanged: (value) {
+        setState(() => searchQuery = value);
+      },
     );
   }
 
