@@ -89,8 +89,17 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
 
         final docs = snapshot.data!.docs.where((doc) {
           final data = doc.data() as Map<String, dynamic>;
+          final query = searchQuery.toLowerCase();
+
           final name = (data['name'] ?? '').toString().toLowerCase();
-          return name.contains(searchQuery.toLowerCase());
+          final industry = (data['industry'] ?? '').toString().toLowerCase();
+          final description =
+              (data['description'] ?? '').toString().toLowerCase();
+
+          // Return true if query matches name, industry, or description
+          return name.contains(query) ||
+              industry.contains(query) ||
+              description.contains(query);
         }).toList();
 
         if (docs.isEmpty) {

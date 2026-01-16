@@ -12,12 +12,7 @@ class AllChatsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Chats', style: TextStyle(color: Colors.tealAccent)),
-        centerTitle: true,
-        elevation: 0,
-      ),
+      
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('chats').snapshots(),
         builder: (context, snapshot) {
