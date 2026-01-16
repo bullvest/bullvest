@@ -282,6 +282,14 @@ class _StartupDetailScreenState extends State<StartupDetailScreen>
                                 'status': 'deal_in_progress',
                                 'dealInvestorId': AppConstants.currentUser.id,
                                 'updatedAt': FieldValue.serverTimestamp(),
+                                });
+
+                                // 2️⃣ Track posting under user
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(AppConstants.currentUser.id)
+          .update({
+        'savedPostingIDs': FieldValue.arrayUnion([widget.startupId])
                               });
 
                               Navigator.push(

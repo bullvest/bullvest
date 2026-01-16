@@ -29,8 +29,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final userData = userDoc.data()!;
     final postingIDs = List<String>.from(userData['myPostingIDs'] ?? []);
+    final savedIDs = List<String>.from(userData['savedPostingIDs'] ?? []);
 
     List<Map<String, dynamic>> startupDetails = [];
+    List<Map<String, dynamic>> startupDetail = [];
 
     if (postingIDs.isNotEmpty) {
       final portfolioSnapshots = await Future.wait(
@@ -49,11 +51,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }).toList();
     }
 
+    if (savedIDs.isNotEmpty) {
+      final startSnapshots = await Future.wait(
+        savedIDs.map(
+          (id) =>
+              FirebaseFirestore.instance.collection('portfolio').doc(id).get(),
+        ),
+      );
+
+      startupDetail = startSnapshots.where((doc) => doc.exists).map((doc) {
+        final datas = doc.data() ?? {};
+        return {
+          'idd': doc.id, // Add the document ID here
+          ...datas, // Spread the rest of the data
+        };
+      }).toList();
+    }
+
     _isFounder = userData['type'] == 'founder';
 
     return {
       'userData': userData,
       'startupDetails': startupDetails,
+      'startupDetail': startupDetail,
     };
   }
 
@@ -106,6 +126,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final userData = snapshot.data!['userData'] as Map<String, dynamic>;
           final startupDetails =
               snapshot.data!['startupDetails'] as List<Map<String, dynamic>>;
+          final startupDetail =
+              snapshot.data!['startupDetail'] as List<Map<String, dynamic>>;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -118,9 +140,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 24),
                 _infoCard(userData, startupDetails),
                 const SizedBox(height: 24),
-                if (!_isEditingProfile) _editProfileButton(userData),
+                // Only show startups section if there are startups
+                if (startupDetails.isNotEmpty) _startupsSection(startupDetails),
                 const SizedBox(height: 24),
-                _startupsSection(startupDetails),
+                // Only show investments section if there are investments
+                if (startupDetail.isNotEmpty) _investSection(startupDetail),
                 const SizedBox(height: 32),
                 _logoutButton(context),
               ],
@@ -217,38 +241,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
+        child: Stack(
           children: [
-            _buildInfoRow('Mobile', userData['mobileNumber']),
-            _buildInfoRow('Country', userData['country']),
-            _buildInfoRow('State', userData['state']),
-            _buildInfoRow('Total Postings', startupDetails.length.toString()),
+            // Card content (Info Rows)
+            Column(
+              children: [
+                _buildInfoRow('Mobile', userData['mobileNumber']),
+                _buildInfoRow('Country', userData['country']),
+                _buildInfoRow('State', userData['state']),
+                _buildInfoRow(
+                    'Total Postings', startupDetails.length.toString()),
+              ],
+            ),
+            // Positioned Edit button at the top-right corner
+            Positioned(
+              top: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: () async {
+                  setState(() {
+                    _isEditingProfile = true;
+                  });
+                  await _editProfile(userData);
+                  setState(() {
+                    _isEditingProfile = false;
+                  });
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black, // Black background for the button
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.tealAccent, width: 2),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.edit,
+                        color: Colors.tealAccent,
+                        size: 20,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Edit',
+                        style: TextStyle(
+                          color: Colors.tealAccent,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  // Edit profile button
-  Widget _editProfileButton(Map<String, dynamic> userData) {
-    return Center(
-      child: ElevatedButton(
-          onPressed: () async {
-            setState(() {
-              _isEditingProfile = true;
-            });
-            await _editProfile(userData);
-            setState(() {
-              _isEditingProfile = false;
-            });
-          },
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.tealAccent),
-          child: const Text(
-            'Edit Profile',
-            style: TextStyle(color: Colors.black),
-          )),
-    );
-  }
+  
 
   Future<void> _editProfile(Map<String, dynamic> userData) async {
     final firstNameController =
@@ -320,10 +373,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         const SizedBox(height: 12),
         startups.isEmpty
-            ? Text(
-                'No startups posted yet.',
-                style: TextStyle(color: Colors.grey[400]),
-              )
+            ? Container()
             : SizedBox(
                 height: 160,
                 child: ListView.separated(
@@ -339,6 +389,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           MaterialPageRoute(
                             builder: (_) => StartupDetailScreen(
                               startupId: startup['id'],
+                            ),
+                          ),
+                        );
+                      },
+                      child: _startupCard(startup),
+                    );
+                  },
+                ),
+              ),
+      ],
+    );
+  }
+
+  Widget _investSection(List<Map<String, dynamic>> investments) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Investment Portfolio',
+          style: TextStyle(
+              color: Colors.tealAccent,
+              fontSize: 16,
+              fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        investments.isEmpty
+            ? Container()
+            : SizedBox(
+                height: 160,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: investments.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final startup = investments[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => StartupDetailScreen(
+                              startupId:
+                                  startup['idd'], // For investment detail
                             ),
                           ),
                         );

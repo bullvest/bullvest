@@ -31,6 +31,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _resetUnread();
   }
 
+  // Validate if the user has access to the chat
   Future<bool> _validateChatAccess() async {
     final doc = await FirebaseFirestore.instance
         .collection('portfolio')
@@ -44,22 +45,33 @@ class _ChatScreenState extends State<ChatScreen> {
 
     final currentUserId = AppConstants.currentUser.id;
 
-    // Only founder or investor on this deal can chat
+    // Only allow founder or investor to chat
     if (currentUserId != widget.founderId &&
-        currentUserId != widget.dealInvestorId) return false;
+        currentUserId != widget.dealInvestorId) {
+      return false;
+    }
 
-    // Only allow chatting if deal is in progress or closed
-    return status != 'open';
+    // Only allow chatting if the deal is in progress or closed
+    return status == 'open' ||
+        status == 'deal_in_progress' ||
+        status == 'closed';
   }
 
+  // Reset unread count when chat is accessed
   Future<void> _resetUnread() async {
     final chatRef = FirebaseFirestore.instance.collection('chats').doc(chatId);
+
+    // Create the chat document if it doesn't exist and reset unread
     await chatRef.set({
       'unread.${AppConstants.currentUser.id}': 0,
-      'participants': [widget.founderId, widget.dealInvestorId]
+      'participants': [widget.founderId, widget.dealInvestorId],
+      'startupId': widget.startupId,
+      'founderId': widget.founderId,
+      'dealInvestorId': widget.dealInvestorId,
     }, SetOptions(merge: true));
   }
 
+  // Send a new message to the chat
   Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
@@ -68,13 +80,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
     final chatRef = FirebaseFirestore.instance.collection('chats').doc(chatId);
 
+    // Add message to Firestore
     await chatRef.collection('messages').add({
       'text': text,
       'senderId': AppConstants.currentUser.id,
       'createdAt': FieldValue.serverTimestamp(),
     });
 
-    // Increment unread for other participant
+    // Increment unread message count for the other participant
     final otherUser = AppConstants.currentUser.id == widget.founderId
         ? widget.dealInvestorId
         : widget.founderId;
@@ -112,7 +125,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
         return Scaffold(
           backgroundColor: Colors.black,
-         
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            title: const Text('Chat'),
+          ),
           body: Column(
             children: [
               Expanded(child: _buildMessages()),
@@ -124,6 +140,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  // Build the messages list
   Widget _buildMessages() {
     final messagesRef = FirebaseFirestore.instance
         .collection('chats')
@@ -171,6 +188,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  // Build the message input field
   Widget _buildInput() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
